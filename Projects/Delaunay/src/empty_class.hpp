@@ -13,3 +13,8 @@ namespace ProjectLibrary
 }
 
 #endif // __EMPTY_H
+
+
+
+
+//Commento aggiunto da Maddi
