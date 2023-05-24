@@ -1,6 +1,7 @@
 //Riga aggiunta da Maddi
 //Altra riga aggiunta da Maddi
 //Ennesima riga aggiunta da Maddi
+//Ennesima riga aggiunta da Emilio
 
 #ifndef __EMPTY_H
 #define __EMPTY_H
