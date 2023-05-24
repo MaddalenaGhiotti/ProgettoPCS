@@ -8,7 +8,7 @@ namespace ProjectLibrary
   class Empty
   {
     public:
-      cout << "nonno" << endl;
+      cout << "aldo" << endl;
       void Show() const { std::cout<< "Hello world;"<< std::endl; }
   };
 }
