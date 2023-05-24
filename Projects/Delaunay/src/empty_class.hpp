@@ -25,6 +25,11 @@ namespace ProjectLibrary
 //Commento aggiunto da Maddi
 =======
 // Lontani
+<<<<<<< HEAD
+//ollo
+ghjghjghjgj
+=======
 // ollo
 // provaemilio
+// teora
 >>>>>>> 7388a79fd76ef5dc90689bb89172bbe01a93da8f
