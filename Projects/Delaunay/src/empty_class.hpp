@@ -1,7 +1,7 @@
 #ifndef __EMPTY_H
 #define __EMPTY_H
 
-// viva la vita
+// viva la vita loca
 #include <iostream>
 
 namespace ProjectLibrary
