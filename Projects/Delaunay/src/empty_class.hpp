@@ -1,3 +1,5 @@
+//Riga aggiunta da Maddi
+
 #ifndef __EMPTY_H
 #define __EMPTY_H
 
