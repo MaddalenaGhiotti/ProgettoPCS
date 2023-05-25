@@ -9,7 +9,7 @@ using namespace testing;
 
 TEST(TestEmpty, TestEmpty)
 {
-  ProjectLibrary::Empty empty;
+  DelaunayLibrary::Point empty;
   ASSERT_NO_THROW(empty.Show());
 }
 
