@@ -9,6 +9,11 @@ using namespace std;
 
 namespace DelaunayLibrary
 {
+    class Delaunay
+    {
+
+    }
+
     class Point
     {
     public: //Da capire
@@ -48,7 +53,7 @@ namespace DelaunayLibrary
     class Grid
     {
     public:
-        Matrix<Square,m,m> sqares;
+        Matrix<Square,m,m> squares;
         double x_min;
         double y_min;
     public:
@@ -63,9 +68,10 @@ namespace DelaunayLibrary
         double startX;
         double startY;
         vector<Triangle> crossingTriangles;
+        vector<Point> crossingPoints;
     public:
         Square() = default;
-        Sqaure(double startX, double startY): startX(startX), startY(startY) {}
+        Square(double startX, double startY): startX(startX), startY(startY) {}
     };
 }
 
