@@ -13,11 +13,11 @@ namespace DelaunayLibrary
     {
     public:
         string fileName;
-        vector<Point> pointsVector;
+        Eigen::Vector<Point> pointsVector;
     public:
         Delaunay() = default;
         Delaunay(string fileName): fileName(fileName) {}
-        vector<Point> ImportPoints(string fileName);
+        Eigen::Vector<Point> ImportPoints(string fileName);
         void Show();
     };
 
