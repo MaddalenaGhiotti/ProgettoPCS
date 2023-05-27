@@ -12,8 +12,8 @@ int main()
 
 //    }
     //Costruzione T2
-    Delunay delunay = Delunay(Dataset/test1.csv);
-    delunay.Show();
+    Delaunay delaunay = Delaunay("Dataset/test1.csv");
+    delaunay.Show();
 
 
     ////// PROVE
