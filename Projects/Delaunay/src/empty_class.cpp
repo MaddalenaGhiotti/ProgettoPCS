@@ -40,7 +40,7 @@ namespace DelaunayLibrary
         double intervalY = (y_max-y_min)/intNum;
         for (i=0; i<intNum; i++)
         {
-            for (j=0; j<intNum; j++){squares(i,j) = Square(x_min+intervalX*j, y_min+intervalY*i);}
+            for (j=0; j<intNum; j++){squares(i,j) = &Square(x_min+intervalX*j, y_min+intervalY*i);}
         }
     }
 
@@ -48,7 +48,7 @@ namespace DelaunayLibrary
     {
         for (i=0; i<intNum; i++)
         {
-            for (j=0; j<intNum; j++){cout<<squares(i,j).toString()<<"    ";}
+            for (j=0; j<intNum; j++){cout<<*squares(i,j).toString()<<"    ";}
             cout<<endl
         }
     }

@@ -50,20 +50,6 @@ namespace DelaunayLibrary
 
     };
 
-    class Grid
-    {
-    public:
-        int intNum;
-        Matrix<Square,intNum,intNum> squares;
-        double x_min;
-        double y_min;
-    public:
-        Grid() = default;
-        Grid(Point points[n]) {}
-        Square SquareOf(Point point){}
-        void Show() const {cout<<squares;}
-    };
-
     class Square
     {
     public:
@@ -74,7 +60,22 @@ namespace DelaunayLibrary
     public:
         Square() = default;
         Square(double startX, double startY): startX(startX), startY(startY) {}
-        string toString() const {return "startX="+startX+"  startY="+startY;}
+        string toString() const {return "startX="+to_string(startX)+"  startY="+to_string(startY);}
+    };
+
+    class Grid
+    {
+    public:
+        int n;
+        int intNum;
+        Matrix<Square*,intNum,intNum> squares;
+        double x_min;
+        double y_min;
+    public:
+        Grid() = default;
+        Grid(Point points[n]) {}
+        Square SquareOf(Point point){}
+        void Show() const {cout<<squares;}
     };
 }
 
