@@ -7,31 +7,32 @@ int main()
 {
     //Funzione da file a array di punti
     //Costruzione T1
-    void Costr_T1(&Grid, &array)
-    {
+//    void Costr_T1(&Grid, &array)
+//    {
 
-    }
+//    }
     //Costruzione T2
-
+    Delunay delunay = Delunay(Dataset/test1.csv);
+    delunay.Show();
 
 
     ////// PROVE
 
     //DelaunayLibrary::Point pointTry1, pointTry2, pointTry3, externalPoint, internalPoint, borderPoint;
-    Point points[10];
+//    Point points[10];
 
-    points[0] = Point(7, 4);
-    points[1] = Point(1, 0);
-    points[2] = Point(3, 6);
-    points[3] = Point(3, 8);
-    points[4] = Point(0, 4);
-    points[5] = Point(1, 6);
-    points[6] = Point(7, 2);
-    points[7] = Point(1, 1);
-    points[8] = Point(4, 5);
-    points[9] = Point(4, 0);
+//    points[0] = Point(7, 4);
+//    points[1] = Point(1, 0);
+//    points[2] = Point(3, 6);
+//    points[3] = Point(3, 8);
+//    points[4] = Point(0, 4);
+//    points[5] = Point(1, 6);
+//    points[6] = Point(7, 2);
+//    points[7] = Point(1, 1);
+//    points[8] = Point(4, 5);
+//    points[9] = Point(4, 0);
 
-    Grid(points).Show();
+//    Grid(points).Show();
 
     //externalPoint = DelaunayLibrary::Point(5, 5);
     //internalPoint = DelaunayLibrary::Point(4,6);

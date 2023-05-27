@@ -1,6 +1,7 @@
 
 //IMPLEMENTAZIONE DEI METODI
 #include "empty_class.hpp"
+#include <fstream>
 
 namespace DelaunayLibrary
 {
@@ -21,6 +22,36 @@ namespace DelaunayLibrary
         if (prod1==0) //Il punto si trova sul secondo lato
             return 2;
         return 3; //Per esclusione il punto si trova sul terzo lato
+    }
+
+    vector<Point> Delunay::ImportPoints(string inputFile)
+    {
+        ifstream file;
+        file.open(inputFile);
+        if (file.fail()){
+            cerr << "Error while opening file" << endl;
+            return false
+        }
+        string line;
+        getline(file, line);
+        while (!file.eof()){
+            getline(file, line);
+            int useless;
+            double x;
+            double y;
+            istringstream ss(line);
+            ss >> useless >> x >> y;
+            Point point = Point(stod(x), stod(y));
+            pointsVector.push_back(point);
+
+        }
+    }
+
+    Delunay::Show()
+    {
+        for (Point point : pointsVector){
+            cout << point.Show() << endl;
+        }
     }
 
     Grid::Grid(Point points[n])
