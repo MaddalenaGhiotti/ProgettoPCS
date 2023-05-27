@@ -23,4 +23,33 @@ namespace DelaunayLibrary
         return 3; //Per esclusione il punto si trova sul terzo lato
     }
 
+    Grid::Grid(Point points[n])
+    {
+        intNum = (int)(sqrt(points.size));
+        double x_min = points[0].x;
+        double x_max = points[0].x;
+        double y_min = points[0].y;
+        double y_max = points[0].y;
+        for (int i=1; i<n; i++)
+        {
+            if (points[i].x<x_min){x_min = points[i].x;}
+            if (points[i].x>x_max){x_max = points[i].x;}
+            if (points[i].y<y_min){y_min = points[i].y;}
+            if (points[i].y>y_max){y_max = points[i].y;}
+        double intervalX = (x_max-x_min)/intNum;
+        double intervalY = (y_max-y_min)/intNum;
+        for (i=0; i<intNum; i++)
+        {
+            for (j=0; j<intNum; j++){squares(i,j) = Square(x_min+intervalX*j, y_min+intervalY*i);}
+        }
+    }
+
+    void Grid::Show()
+    {
+        for (i=0; i<intNum; i++)
+        {
+            for (j=0; j<intNum; j++){cout<<squares(i,j).toString()<<"    ";}
+            cout<<endl
+        }
+    }
 }

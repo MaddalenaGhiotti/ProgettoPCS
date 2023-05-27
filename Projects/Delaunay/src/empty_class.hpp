@@ -12,7 +12,7 @@ namespace DelaunayLibrary
     class Delaunay
     {
 
-    }
+    };
 
     class Point
     {
@@ -53,13 +53,15 @@ namespace DelaunayLibrary
     class Grid
     {
     public:
-        Matrix<Square,m,m> squares;
+        int intNum;
+        Matrix<Square,intNum,intNum> squares;
         double x_min;
         double y_min;
     public:
         Grid() = default;
         Grid(Point points[n]) {}
         Square SquareOf(Point point){}
+        void Show() const {cout<<squares;}
     };
 
     class Square
@@ -72,6 +74,7 @@ namespace DelaunayLibrary
     public:
         Square() = default;
         Square(double startX, double startY): startX(startX), startY(startY) {}
+        string toString() const {return "startX="+startX+"  startY="+startY;}
     };
 }
 
