@@ -40,7 +40,7 @@ namespace DelaunayLibrary
         list<Triangle> hullTriangles;
     public:
         Mesh() = default;
-        Mesh()
+        Mesh(Triangle triangle) {meshTriangles.push_back(triangle);}
 
 
     };
@@ -54,6 +54,7 @@ namespace DelaunayLibrary
     public:
         Grid() = default;
         Grid(Point points[n]) {}
+        Square SquareOf(Point point){}
     };
 
     class Square
@@ -63,7 +64,8 @@ namespace DelaunayLibrary
         double startY;
         vector<Triangle> crossingTriangles;
     public:
-
+        Square() = default;
+        Sqaure(double startX, double startY): startX(startX), startY(startY) {}
     };
 }
 
