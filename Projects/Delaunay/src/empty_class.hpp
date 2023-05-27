@@ -11,7 +11,14 @@ namespace DelaunayLibrary
 {
     class Delaunay
     {
-
+    public:
+        string fileName;
+        vector<Point> pointsVector;
+    public:
+        Delaunay() = default;
+        Delaunay(string fileName): fileName(fileName) {}
+        vector<Point> ImportPoints(string fileName);
+        void Show();
     };
 
     class Point
