@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-// anubi
 
-=======
->>>>>>> origin/main
 #ifndef __EMPTY_H
 #define __EMPTY_H
 #include "Eigen/Eigen"
@@ -20,10 +16,6 @@ namespace DelaunayLibrary
     public: //Da capire
         double x, y;
     public:
-<<<<<<< HEAD
-      void Show() const { std::cout<< "Hello world;"<< std::endl; }
-  };
-=======
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
         string toString() const {return "x="+to_string(x)+"  y="+to_string(y);}
@@ -96,7 +88,6 @@ namespace DelaunayLibrary
         Mesh(Triangle& triangle) {meshTriangles.push_back(triangle);}
 
     };
->>>>>>> origin/main
 }
 
 #endif // __EMPTY_H
