@@ -26,27 +26,25 @@ namespace DelaunayLibrary
     }
 
 
-    vector<Point> Delaunay::ImportPoints()
+    void Delaunay::ImportPoints()
     {
         ifstream file;
         file.open(fileName);
         if (file.fail()){
             cerr << "Error while opening file" << endl;
-            return pointsVector;
+            //return pointsVector;
         }
         string line;
         getline(file, line);
         while (!file.eof()){
             getline(file, line);
-            int useless1;
-            //char useless2;
+            int useless;
             double x;
             double y;
             istringstream ss(line);
-            ss >> useless1 >> x >> y;
+            ss >> useless >> x >> y;
             Point point = Point(x, y);
             pointsVector.push_back(point);
-
         }
     }
 

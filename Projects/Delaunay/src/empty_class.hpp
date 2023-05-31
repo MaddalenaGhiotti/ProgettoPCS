@@ -30,7 +30,7 @@ namespace DelaunayLibrary
     public:
         Delaunay() = default;
         Delaunay(const string& fileName): fileName(fileName) {}
-        vector<Point> ImportPoints();
+        void ImportPoints();
         void Show();
     };
 
