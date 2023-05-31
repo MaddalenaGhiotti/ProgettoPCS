@@ -15,6 +15,7 @@ namespace DelaunayLibrary
     {
     public: //Da capire
         double x, y;
+        //inRectangle Tipo rettangolo a cui il punto è interno
     public:
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
@@ -31,6 +32,7 @@ namespace DelaunayLibrary
     public:
         Delaunay() = default;
         Delaunay(const string& inputFileName);
+        void ExecuteDelaunay();
         void Show();
     };
 
@@ -48,13 +50,13 @@ namespace DelaunayLibrary
     };
 
 
-    class Square
+    class Square //Cambiare in Rectangle
     {
     public:
         double startX;
         double startY;
         vector<Triangle> crossingTriangles;
-        vector<Point> crossingPoints;
+        vector<Point> crossingPoints; //Cambiare crossing con un altro nome
     public:
         Square() = default;
         Square(double& startX, double& startY): startX(startX), startY(startY) {}
@@ -65,6 +67,7 @@ namespace DelaunayLibrary
     class Grid
     {
     public:
+        //Altezza rettangolo e larghezza rettangolo
         int intNum;
         Eigen::Matrix<Square, Eigen::Dynamic, Eigen::Dynamic> squares;
         double x_min;
@@ -80,12 +83,13 @@ namespace DelaunayLibrary
     class Mesh
     {
     public:  //Da capire
+        //ConvexHull da capire, aggiungere triangoli guida (?)
         vector<Triangle> meshTriangles;
         list<Point> convexHull;
         list<Triangle> hullTriangles;
     public:
         Mesh() = default;
-        Mesh(Triangle& triangle) {meshTriangles.push_back(triangle);}
+        Mesh(Triangle& triangle) {meshTriangles.push_back(triangle);}  //Aggiungere Convex Hull al costruttore (capire come)
 
     };
 }
