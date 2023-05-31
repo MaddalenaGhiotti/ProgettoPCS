@@ -29,8 +29,7 @@ namespace DelaunayLibrary
         vector<Point> pointsVector;
     public:
         Delaunay() = default;
-        Delaunay(const string& fileName): fileName(fileName) {}
-        void ImportPoints();
+        Delaunay(const string& inputFileName);
         void Show();
     };
 

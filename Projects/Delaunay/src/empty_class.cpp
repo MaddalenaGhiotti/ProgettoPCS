@@ -26,8 +26,9 @@ namespace DelaunayLibrary
     }
 
 
-    void Delaunay::ImportPoints()
+    Delaunay::Delaunay(const string& inputFileName)
     {
+        fileName = inputFileName;
         ifstream file;
         file.open(fileName);
         if (file.fail()){
@@ -51,6 +52,7 @@ namespace DelaunayLibrary
 
     void Delaunay::Show()
     {
+        cout<<"PUNTI DELAUNAY"<<endl;
         string str = "";
         for (Point point : pointsVector){
             str += point.toString() + '\n';

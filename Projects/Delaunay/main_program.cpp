@@ -9,7 +9,7 @@ int main()
     //Test da file a array di punti
     string inputFile = "test1.csv";
     Delaunay delaunay = Delaunay(inputFile);
-    delaunay.ImportPoints();
+    //delaunay.ImportPoints();
     delaunay.Show();
 
     //Costruzione T1
