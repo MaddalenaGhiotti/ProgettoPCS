@@ -5,6 +5,7 @@ using namespace DelaunayLibrary;
 
 int main()
 {
+
     //Test da file a array di punti
 //    string inputFile = "../Dataset/test1.csv";
 //    Delaunay delaunay = Delaunay(inputFile);
@@ -22,49 +23,22 @@ int main()
 
     ////// PROVE
 
-    //DelaunayLibrary::Point pointTry1, pointTry2, pointTry3, externalPoint, internalPoint, borderPoint;
+    //Vector di punti per prove
     vector<Point> points;
 
-    double x1=7.0, y1=4.0;
-    double x2=1.0, y2=0.0;
-    double x3=3.0, y3=6.0;
-    double x4=3.0, y4=8.0;
-    double x5=0.0, y5=4.0;
-    double x6=1.0, y6=6.0;
-    double x7=7.0, y7=2.0;
-    double x8=1.0, y8=1.0;
-    double x9=4.0, y9=5.0;
-    double x10=4.0, y10=0.0;
+    points.push_back(Point(7.0, 4.0));
+    points.push_back(Point(1.0, 0.0));
+    points.push_back(Point(3.0, 6.0));
+    points.push_back(Point(3.0, 8.0));
+    points.push_back(Point(0.0, 4.0));
+    points.push_back(Point(1.0, 6.0));
+    points.push_back(Point(7.0, 2.0));
+    points.push_back(Point(1.0, 1.0));
+    points.push_back(Point(4.0, 5.0));
+    points.push_back(Point(4.0, 0.0));
 
-
-
-    points[0] = Point(x1, y1);
-    points[1] = Point(x2, y2);
-    points[2] = Point(x3, y3);
-    points[3] = Point(x4, y4);
-    points[4] = Point(x5, y5);
-    points[5] = Point(x6, y6);
-    points[6] = Point(x7, y7);
-    points[7] = Point(x8, y8);
-    points[8] = Point(x9, y9);
-    points[9] = Point(x10, y10);
-
-
-//    points[1] = Point(1, 0);
-//    points[2] = Point(3, 6);
-//    points[3] = Point(3, 8);
-//    points[4] = Point(0, 4);
-//    points[5] = Point(1, 6);
-//    points[6] = Point(7, 2);
-//    points[7] = Point(1, 1);
-//    points[8] = Point(4, 5);
-//    points[9] = Point(4, 0);
-
-    Grid(points).Show();
-
-    //externalPoint = DelaunayLibrary::Point(5, 5);
-    //internalPoint = DelaunayLibrary::Point(4,6);
-    //borderPoint = DelaunayLibrary::Point(3,2);
+    Grid grid = Grid(points);
+    grid.Show();
 
     //DelaunayLibrary::Triangle triangle;
     //triangle = DelaunayLibrary::Triangle(pointTry1, pointTry2, pointTry3);

@@ -68,8 +68,11 @@ namespace DelaunayLibrary
 
     Grid::Grid(vector<Point>& points)
     {
+
         int n = points.size();
         intNum = (int)(sqrt(points.size()));
+        squares.resize(intNum, intNum);
+        //Eigen::Matrix<Square, intNum, intNum> squaresLocal;
         double x_min = points[0].x;
         double x_max = points[0].x;
         double y_min = points[0].y;
@@ -90,15 +93,18 @@ namespace DelaunayLibrary
                 squares(i,j) = Square(startX, startY);
             }
         }
+        //squares = squaresLocal;
     }
 
 
     void Grid::Show()
     {
+        cout<<"GRIGLIA"<<endl;
         for (int i=0; i<intNum; i++)
         {
-            for (int j=0; j<intNum; j++){cout<<squares(i,j).toString()<<"    ";}
+            for (int j=0; j<intNum; j++){cout<<"("+squares(i,j).toString()+")"<<"    ";}
             cout<<endl;
         }
+        cout<<endl;
     }
 }

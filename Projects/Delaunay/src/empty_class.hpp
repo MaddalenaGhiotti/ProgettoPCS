@@ -16,7 +16,7 @@ namespace DelaunayLibrary
         double x, y;
     public:
         Point() = default;
-        Point(double& x, double& y): x(x), y(y) {}
+        Point(double x, double y): x(x), y(y) {}
         string toString() const {return "x="+to_string(x)+"  y="+to_string(y);}
         void Show() const {cout<<toString()<<endl;}
     };
