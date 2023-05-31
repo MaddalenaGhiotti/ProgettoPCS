@@ -28,8 +28,6 @@ namespace DelaunayLibrary
 
     vector<Point> Delaunay::ImportPoints()
     {
-        cout<<"Pippo";
-        cout<<fileName;
         ifstream file;
         file.open(fileName);
         if (file.fail()){
@@ -40,16 +38,13 @@ namespace DelaunayLibrary
         getline(file, line);
         while (!file.eof()){
             getline(file, line);
-            cout<<line<<endl;
             int useless1;
-            char useless2;
+            //char useless2;
             double x;
             double y;
             istringstream ss(line);
-            ss >> useless1 >> useless2 >> x >> useless2 >> y;
-            cout<<x<<y<<endl;
+            ss >> useless1 >> x >> y;
             Point point = Point(x, y);
-            point.Show();
             pointsVector.push_back(point);
 
         }

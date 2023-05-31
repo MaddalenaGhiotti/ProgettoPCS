@@ -7,10 +7,10 @@ int main()
 {
 
     //Test da file a array di punti
-//    string inputFile = "../Dataset/test1.csv";
-//    Delaunay delaunay = Delaunay(inputFile);
-//    delaunay.ImportPoints();
-//    delaunay.Show();
+    string inputFile = "test1.csv";
+    Delaunay delaunay = Delaunay(inputFile);
+    delaunay.ImportPoints();
+    delaunay.Show();
 
     //Costruzione T1
 //    void Costr_T1(&Grid, &array)
@@ -24,20 +24,20 @@ int main()
     ////// PROVE
 
     //Vector di punti per prove
-    vector<Point> points;
+//    vector<Point> points;
 
-    points.push_back(Point(7.0, 4.0));
-    points.push_back(Point(1.0, 0.0));
-    points.push_back(Point(3.0, 6.0));
-    points.push_back(Point(3.0, 8.0));
-    points.push_back(Point(0.0, 4.0));
-    points.push_back(Point(1.0, 6.0));
-    points.push_back(Point(7.0, 2.0));
-    points.push_back(Point(1.0, 1.0));
-    points.push_back(Point(4.0, 5.0));
-    points.push_back(Point(4.0, 0.0));
+//    points.push_back(Point(7.0, 4.0));
+//    points.push_back(Point(1.0, 0.0));
+//    points.push_back(Point(3.0, 6.0));
+//    points.push_back(Point(3.0, 8.0));
+//    points.push_back(Point(0.0, 4.0));
+//    points.push_back(Point(1.0, 6.0));
+//    points.push_back(Point(7.0, 2.0));
+//    points.push_back(Point(1.0, 1.0));
+//    points.push_back(Point(4.0, 5.0));
+//    points.push_back(Point(4.0, 0.0));
 
-    Grid grid = Grid(points);
+    Grid grid = Grid(delaunay.pointsVector);
     grid.Show();
 
     //DelaunayLibrary::Triangle triangle;
