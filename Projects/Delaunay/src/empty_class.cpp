@@ -49,6 +49,36 @@ namespace DelaunayLibrary
         }
     }
 
+    //COME FOSSE IL NOSTRO MAIN
+    void Delaunay::ExecuteDelaunay()
+    {
+        Grid grid = Grid(pointsVector); //Costruzione griglia
+        grid.PointsInRectangle(pointsVector); //Aggiunge ad ogni punto il rettangolo a cui è interno e ad ogni rettangolo il vector dei punti a cui è interno. (Valutare se fondere con costruttore griglia)
+        Point firstPoints[4] = grid.Snake(); //Restituisce 4 punti di cui i primi 3 sono il triangolone iniziale (Attenzione a punti allineati, stesso punto, ecc.)
+        firstTriangle = Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
+        Mesh mesh = Mesh(firstTriangle); //Decidere come gestire Convex Hull
+        //Delaunay con quarto punto
+        int position = ContainsPoint(firstPoints[4]); //Controllare se è interno o esterno
+        if (position == -1){mesh.AddExternalPoint(firstPoints[4]);}
+        else if (position == 0) {mesh.AddInternalPoint(firstPoints[4], firstTriangle);}
+        else {} //Da capire
+        for (Point point : pointsVector)
+        {
+            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo a cui è interno)
+            // If interno AddInternalPoint, if external AddExternalPoint.
+        }
+        mesh.MeshToEdges();
+    }
+
+    void Mesh::AddExternalPoint(Point point)
+    {
+
+    }
+
+    void Mesh::AddInternalPoint(Point point)
+    {
+
+    }
 
     void Delaunay::Show()
     {
