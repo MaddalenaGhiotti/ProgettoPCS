@@ -44,6 +44,7 @@ namespace DelaunayLibrary
     public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c) {vertices[0]=a;vertices[1]=b;vertices[2]=c;}
+        array<Point,3> OrderVertices();
         void Show() const { cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl; }
         int ContainsPoint(Point& point);
     };
@@ -74,22 +75,38 @@ namespace DelaunayLibrary
     public:
         Grid() = default;
         Grid(vector<Point>& points);
-        Square SquareOf(Point& point){}
+        //Square SquareOf(Point& point){}
         void Show();
     };
 
+
+    class convexHullElem
+    {
+    public:
+        Point *hullPoint;
+        Triangle *externalTriangle;
+        convexHullElem *prev;
+        convexHullElem *next;
+    public:
+        convexHullElem() = default;
+        convexHullElem(Point& point, Triangle& triangle): hullPoint(new Point(point)), externalTriangle(&triangle) {}
+        //convexHullElem(Point& point, Triangle& triangle): hullPoint(&point), externalTriangle(&triangle) {}
+        void SetPrev(convexHullElem* previous){prev=previous;}
+        void SetNext(convexHullElem* nextOne){next=nextOne;}
+        void SetTriangle(Triangle* triangle){externalTriangle=triangle;}
+    };
 
     class Mesh
     {
     public:  //Da capire
         //ConvexHull da capire, aggiungere triangoli guida (?)
         vector<Triangle> meshTriangles;
-        list<Point> convexHull;
-        list<Triangle> hullTriangles;
+        vector<Triangle> guideTriangles;
+        convexHullElem *convexHull;
     public:
         Mesh() = default;
-        Mesh(Triangle& triangle) {meshTriangles.push_back(triangle);}  //Aggiungere Convex Hull al costruttore (capire come)
-
+        Mesh(Triangle& triangle);
+        void AddExternalPoint(Point point);
     };
 }
 
