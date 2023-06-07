@@ -40,7 +40,7 @@ namespace DelaunayLibrary
     {
     public: //Da capire
         Point vertices[3];
-        int adiacentTriangles[3];
+        vector<Triangle*> adiacentTriangles;
     public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c) {vertices[0]=a;vertices[1]=b;vertices[2]=c;}

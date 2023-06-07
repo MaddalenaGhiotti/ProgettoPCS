@@ -33,7 +33,7 @@ int main()
     Point point5 = Point(5,7);
     Point point6 = Point(7,2);
 
-    Point externalPoint = Point(0,3);
+    Point externalPoint = Point(8,0);
 
     //Triangoli
     Triangle triangle0 = Triangle(point0, point1, point2);
@@ -99,7 +99,7 @@ int main()
     //Stampa punti convex hull
     cout<<"PUNTI NUOVO CONVEX HULL"<<endl;
     convexHullElem* currentElem2 = elem0;
-    for (int i=0; i<6; i++)
+    for (int i=0; i<8; i++)
     {
         currentElem2->hullPoint->Show();
         currentElem2 = currentElem2->next;
