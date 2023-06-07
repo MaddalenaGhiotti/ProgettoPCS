@@ -1,7 +1,6 @@
 
 //MAIN CHE SERVE A NOI PER FARE DELLE PROVE, ES. STAMPARE A SCHERMO (?)
 #include "empty_class.hpp"
-#include <iostream>
 using namespace DelaunayLibrary;
 
 int main()
@@ -11,7 +10,7 @@ int main()
     string inputFile = "test1.csv";
     Delaunay delaunay = Delaunay(inputFile);
     //delaunay.ImportPoints();
-    //delaunay.Show();
+    delaunay.Show();
 
     //Costruzione T1
 //    void Costr_T1(&Grid, &array)
@@ -39,23 +38,7 @@ int main()
 //    points.push_back(Point(4.0, 0.0));
 
     Grid grid = Grid(delaunay.pointsVector);
-    //grid.Show();
-
-    Point a = Point(0, 2);
-    Point b = Point(4, 2);
-    Point c = Point(2, 1);
-    Point d = Point(2, 3);
-    Triangle Tri1 = Triangle(a, b, c);
-    Triangle Tri2 = Triangle(a, b, d);
-    if (CheckConvex(Tri1, Tri2) == 1)
-    {
-       cout << "True" << endl;
-    }
-    if (DelunayProperty(Tri1, Tri2) == 0)
-    {
-       cout << "da flippare" << endl;
-    }
-
+    grid.Show();
 
     //DelaunayLibrary::Triangle triangle;
     //triangle = DelaunayLibrary::Triangle(pointTry1, pointTry2, pointTry3);
