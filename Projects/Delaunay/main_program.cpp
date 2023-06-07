@@ -9,16 +9,16 @@ int main()
 //_______________________________________________________________________________________________________________________
 //DA FILE A ARRAY DI PUNTI
 
-    string inputFile = "test1.csv";
-    Delaunay delaunay = Delaunay(inputFile);
-    delaunay.Show();
+//    string inputFile = "test1.csv";
+//    Delaunay delaunay = Delaunay(inputFile);
+//    delaunay.Show();
 
 
-//_______________________________________________________________________________________________________________________
-//CREAZIONE E STAMPA GRIGLIA
+////_______________________________________________________________________________________________________________________
+////CREAZIONE E STAMPA GRIGLIA
 
-    Grid grid = Grid(delaunay.pointsVector);
-    grid.Show();
+//    Grid grid = Grid(delaunay.pointsVector);
+//    grid.Show();
 
 
 //_______________________________________________________________________________________________________________________
