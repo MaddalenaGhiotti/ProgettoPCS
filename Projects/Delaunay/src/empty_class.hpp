@@ -49,11 +49,12 @@ namespace DelaunayLibrary
     {
     public: //Da capire
         Point vertices[3];
-        int adiacentTriangles[3];
-        vector<Triangle> PointedTriangles;
+        vector<Triangle*> PointedTriangles;
+        vector<Triangle*> adiacentTriangles;
     public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c) {vertices[0]=a;vertices[1]=b;vertices[2]=c;}
+        array<Point,3> OrderVertices();
         void Show() const { cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl; }
         int ContainsPoint(Point& point);
 
@@ -92,21 +93,38 @@ namespace DelaunayLibrary
     };
 
 
+    class convexHullElem
+    {
+    public:
+        Point *hullPoint;
+        Triangle *externalTriangle;
+        convexHullElem *prev;
+        convexHullElem *next;
+    public:
+        convexHullElem() = default;
+        convexHullElem(Point& point, Triangle& triangle): hullPoint(new Point(point)), externalTriangle(new Triangle(triangle)) {}
+        //convexHullElem(Point& point, Triangle& triangle): hullPoint(&point), externalTriangle(&triangle) {}
+        void SetPrev(convexHullElem* previous){prev=previous;}
+        void SetNext(convexHullElem* nextOne){next=nextOne;}
+        void SetTriangle(Triangle* triangle){externalTriangle=triangle;}
+    };
+
     class Mesh
     {
     public:  //Da capire
         //ConvexHull da capire, aggiungere triangoli guida (?)
         vector<Triangle> meshTriangles;
-        list<Point> convexHull;
-        list<Triangle> hullTriangles;
+        vector<Triangle> guideTriangles;
+        convexHullElem *convexHull;
         list<Triangle> lastMesh;
     public:
         Mesh() = default;
-        Mesh(Triangle& triangle) {meshTriangles.push_back(triangle);}  //Aggiungere Convex Hull al costruttore (capire come)
+        Mesh(Triangle& triangle);  //Aggiungere Convex Hull al costruttore (capire come)
         void DelunayPropagation(Triangle& startTriangle);
         void Delunay(vector<Triangle>& new_triangles);
         void Flip(Triangle& Triangle1, Triangle& Triangle2);
         void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
+        void AddExternalPoint(Point point);
     };
 }
 

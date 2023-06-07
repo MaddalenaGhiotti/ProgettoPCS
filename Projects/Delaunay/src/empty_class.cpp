@@ -7,16 +7,44 @@
 
 namespace DelaunayLibrary
 {
-    //Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
-    //mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
-    void Mesh::OperationEdges(Triangle& TriangleNew1, Triangle& TriangleNew2, Triangle& TriangleOld1, Triangle& TriangleOld2)
-    {
-      for (int i; i < 3; i++)
-      {
+//COME FOSSE IL NOSTRO MAIN
+//    void Delaunay::ExecuteDelaunay()
+//    {
+//        Grid grid = Grid(pointsVector); //Costruzione griglia
+//        grid.PointsInRectangle(pointsVector); //Aggiunge ad ogni punto il rettangolo a cui è interno e ad ogni rettangolo il vector dei punti a cui è interno. (Valutare se fondere con costruttore griglia)
+//        Point firstPoints[4] = grid.Snake(); //Restituisce 4 punti di cui i primi 3 sono il triangolone iniziale (Attenzione a punti allineati, stesso punto, ecc.)
+//        firstTriangle = Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
+//        Mesh mesh = Mesh(firstTriangle); //Decidere come gestire Convex Hull
+//        //Delaunay con quarto punto
+//        int position = ContainsPoint(firstPoints[4]); //Controllare se è interno o esterno
+//        if (position == -1){mesh.AddExternalPoint(firstPoints[4]);}
+//        else if (position == 0) {mesh.AddInternalPoint(firstPoints[4], firstTriangle);}
+//        else {} //Da capire
+//        for (Point point : pointsVector)
+//        {
+//            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo a cui è interno)
+//            // If interno AddInternalPoint, if external AddExternalPoint.
+//        }
+//        mesh.MeshToEdges();
+//    }
 
-      }
-    }
+        //void Mesh::AddInternalPoint(Point point)
+        //{
 
+        //}
+
+
+//    void Mesh::OperationEdges(Triangle& TriangleNew1, Triangle& TriangleNew2, Triangle& TriangleOld1, Triangle& TriangleOld2)
+//    {
+//      for (int i; i < 3; i++)
+//      {
+
+//      }
+//    }
+
+
+//Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
+//mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
     int Triangle::ContainsPoint(Point& point)
     {
         double d = (point.x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (point.y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
@@ -58,41 +86,16 @@ namespace DelaunayLibrary
         }
     }
 
-    //COME FOSSE IL NOSTRO MAIN
-    //void Delaunay::ExecuteDelaunay()
-    //{
-        //Grid grid = Grid(pointsVector); //Costruzione griglia
-        //grid.PointsInRectangle(pointsVector); //Aggiunge ad ogni punto il rettangolo a cui è interno e ad ogni rettangolo il vector dei punti a cui è interno. (Valutare se fondere con costruttore griglia)
-        //Point firstPoints[4] = grid.Snake(); //Restituisce 4 punti di cui i primi 3 sono il triangolone iniziale (Attenzione a punti allineati, stesso punto, ecc.)
-        //firstTriangle = Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
-        //Mesh mesh = Mesh(firstTriangle); //Decidere come gestire Convex Hull
-        //Delaunay con quarto punto
-        //int position = ContainsPoint(firstPoints[4]); //Controllare se è interno o esterno
-        //if (position == -1){mesh.AddExternalPoint(firstPoints[4]);}
-        //else if (position == 0) {mesh.AddInternalPoint(firstPoints[4], firstTriangle);}
-        //else {} //Da capire
-        //for (Point point : pointsVector)
-        //{
-            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo a cui è interno)
-            // If interno AddInternalPoint, if external AddExternalPoint.
-        //}
-        //mesh.MeshToEdges();
-    //}
 
-    //void Mesh::AddExternalPoint(Point point)
-    //{
-
-    //}
-
-    //void Mesh::AddInternalPoint(Point point)
-    //{
-
-    //}
     double determinante(double& a11, double& a12, double& a13, double& a21, double& a22, double& a23, double& a31, double& a32, double& a33)
     {
         double det = (a11 * a22 * a33) + (a12 * a23 * a31) + (a13 * a21 * a32) - (a13 * a22 * a31) - (a12 * a21 * a33) - (a11 * a23 * a32);
         return det;
     }
+
+
+//______________________________________________________________________________________________
+//ORDINARE I VERTICI
 
     void reorderPointsCounterclockwiseTr(Point& p1, Point& p2, Point& p3)
     {
@@ -103,21 +106,30 @@ namespace DelaunayLibrary
             p3 = temp;
         }
     }
+//    void reorderPointsCounterclockwiseQ(vector<Point> &quadruplet)
+//    {
+//        for (int i = 0; i < 3; i++)
+//        {
+//            if (( quadruplet[(i+1)%3].x - quadruplet[i].x) * (quadruplet[3].y - quadruplet[i].y) - (quadruplet[(i+1)%3].y - quadruplet[i].y) * (quadruplet[3].x - quadruplet[i].x) < 0)
+//            {
+//                vector<Point> Copia = quadruplet;
+//                quadruplet[0] = Copia[i];
+//                quadruplet[1] = Copia[3];
+//                quadruplet[2] = Copia[(i + 1) %3];
+//                quadruplet[3] = Copia[(i + 2) %3];
+//            }
+//        }
+//    }
 
-    void reorderPointsCounterclockwiseQ(vector<Point> &quadruplet)
+    array<Point,3> Triangle::OrderVertices()
     {
-        for (int i = 0; i < 3; i++)
-        {
-            if (( quadruplet[(i+1)%3].x - quadruplet[i].x) * (quadruplet[3].y - quadruplet[i].y) - (quadruplet[(i+1)%3].y - quadruplet[i].y) * (quadruplet[3].x - quadruplet[i].x) < 0)
-            {
-                vector<Point> Copia = quadruplet;
-                quadruplet[0] = Copia[i];
-                quadruplet[1] = Copia[3];
-                quadruplet[2] = Copia[(i + 1) %3];
-                quadruplet[3] = Copia[(i + 2) %3];
-            }
-        }
+        double d = (vertices[2].x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (vertices[2].y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
+        if (d<0){return {vertices[0], vertices[2], vertices[1]};}
+        return {vertices[0], vertices[1], vertices[2]};
     }
+
+//______________________________________________________________________________________________
+
 
     bool DelunayProperty(Triangle& Triangle1, Triangle& Triangle2)
     {
@@ -208,7 +220,7 @@ namespace DelaunayLibrary
         bool segno[4];
         for (int i = 0; i < 4; i++)
         {
-            double a = ((Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x));
+            // double a = ((Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x));
             if (( Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x) > 0)
             {
                 segno [i] = 1;
@@ -233,7 +245,6 @@ namespace DelaunayLibrary
         {
             return 0;
         }
-
     }
 
     void Mesh::Flip(Triangle& Triangle1, Triangle& Triangle2)
@@ -278,32 +289,32 @@ namespace DelaunayLibrary
         //cout << Lato[1].x << Lato[1].y << endl;
         Quadril[2] = esterno2;
         Quadril[3] = Lato[1];
-        Triangle TrNew1 = Triangle(esterno1, Lato[0], esterno2);
-        TrNew1.adiacentTriangles[0] = meshTriangles.size();
-        operationEdges(TrNew1);
-        Triangle TrNew2 = Triangle(esterno1, Lato[1], esterno2);
-        TrNew1.adiacentTriangles[0] = meshTriangles.size() + 1 ;
-        operationEdges(TrNew1);
-        meshTriangles.push_back(TrNew1);
-        meshTriangles.push_back(TrNew1);
-        Triangle1.PointedTriangles.push_back(TrNew1);
-        Triangle1.PointedTriangles.push_back(TrNew2);
-        Triangle2.PointedTriangles.push_back(TrNew1);
-        Triangle2.PointedTriangles.push_back(TrNew2);
+        //Triangle TrNew1 = Triangle(esterno1, Lato[0], esterno2);
+//        TrNew1.adiacentTriangles[0] = meshTriangles.size();
+//        operationEdges(TrNew1);
+//        Triangle TrNew2 = Triangle(esterno1, Lato[1], esterno2);
+//        TrNew1.adiacentTriangles[0] = meshTriangles.size() + 1 ;
+//        operationEdges(TrNew1);
+//        meshTriangles.push_back(TrNew1);
+//        meshTriangles.push_back(TrNew1);
+//        Triangle1.PointedTriangles.push_back(TrNew1);
+//        Triangle1.PointedTriangles.push_back(TrNew2);
+//        Triangle2.PointedTriangles.push_back(TrNew1);
+//        Triangle2.PointedTriangles.push_back(TrNew2);
     }
 
     void Mesh::DelunayPropagation(Triangle& StartTriangle)
     {
        for (int i = 0; i < 3; i++)
        {
-        Triangle TriangoloAdj = meshTriangles[StartTriangle.adiacentTriangles[i]];
-        if (CheckConvex(StartTriangle, TriangoloAdj) == 0)
-        {
-            if (DelunayProperty(StartTriangle, TriangoloAdj) == 0 or (DelunayProperty(StartTriangle, TriangoloAdj) == 0) )
-            {
-                Flip(StartTriangle, TriangoloAdj);
-            }
-        }
+//            Triangle TriangoloAdj = meshTriangles[StartTriangle.adiacentTriangles[i]];
+//            if (CheckConvex(StartTriangle, TriangoloAdj) == 0)
+//            {
+//                if (DelunayProperty(StartTriangle, TriangoloAdj) == 0 or (DelunayProperty(StartTriangle, TriangoloAdj) == 0) )
+//                {
+//                    Flip(StartTriangle, TriangoloAdj);
+//                }
+//            }
 
        }
     }
@@ -317,6 +328,201 @@ namespace DelaunayLibrary
             DelunayPropagation(element);
         }
     }
+
+//////////////////////
+
+    Mesh::Mesh (Triangle& triangle)
+    {
+        meshTriangles.push_back(triangle);
+        guideTriangles.push_back(triangle);
+        array<Point,3> orderedPoints = triangle.OrderVertices();
+        //Creazione dei tre oggetti
+        convexHullElem* firstElem = new convexHullElem(orderedPoints[0], triangle);
+        convexHullElem* secondElem = new convexHullElem(orderedPoints[1], triangle);
+        convexHullElem* thirdElem = new convexHullElem(orderedPoints[2], triangle);
+        //Assegnazione degli indirizzi ai puntatori
+        firstElem->SetNext(secondElem);
+        secondElem->SetNext(thirdElem);
+        thirdElem->SetNext(firstElem);
+
+        secondElem->SetPrev(firstElem);
+        thirdElem->SetPrev(secondElem);
+        firstElem->SetPrev(thirdElem);
+
+        convexHull = firstElem;
+    }
+
+
+    void Mesh::AddExternalPoint(Point point)
+    {
+        cout<<"PRIMO PUNTO CONVEX HULL"<<endl;
+        convexHullElem* elemHeadCCW = convexHull->next;
+        convexHullElem* elemTailCCW = convexHull;
+        Point* headCCW = elemHeadCCW->hullPoint;
+        Point* tailCCW = elemTailCCW->hullPoint;
+        tailCCW->Show();
+        headCCW->Show();
+
+        double d = (point.x - headCCW->x) * (tailCCW->y - headCCW->y) - (tailCCW->x - headCCW->x) * (point.y - headCCW->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+        cout<<d<<endl;
+        cout<<endl;
+
+        //SE IL PRIMO LATO NON E' DA COLLEGARE
+        if (d>=0)
+        {
+            //Inizio a girare in senso antiorario
+            while (d>=0)
+            //for(int i=0; i<2; i++)
+            {
+                elemTailCCW = elemHeadCCW;
+                elemHeadCCW = elemHeadCCW->next;
+                headCCW = elemHeadCCW->hullPoint;
+                tailCCW = elemTailCCW->hullPoint;
+                tailCCW->Show();
+                headCCW->Show();
+                d = (point.x - headCCW->x) * (tailCCW->y - headCCW->y) - (tailCCW->x - headCCW->x) * (point.y - headCCW->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+                cout<<d<<endl<<endl;
+            }
+            //Aggiunta di un nuovo triangolo
+            Triangle newGuideTriangle = Triangle(point, *headCCW, *tailCCW);
+            Triangle lastTriangle = newGuideTriangle;
+            meshTriangles.push_back(newGuideTriangle);
+            guideTriangles.push_back(newGuideTriangle);
+            newGuideTriangle.Show();
+            cout<<endl;
+
+            //Aggiunta di un nuovo elemento nel convex hull
+            convexHullElem* newElem = new convexHullElem(point, newGuideTriangle);
+            newElem->SetPrev(elemTailCCW);
+            elemTailCCW->SetNext(newElem);
+
+            //...DA ELIMINARE...
+            //newElem->SetNext(firstElem);
+            Point* firstRight = tailCCW;
+            cout<<"Primo punto da collegare: ";
+            firstRight->Show();
+            cout<<endl;
+            //..................
+
+            elemTailCCW = elemHeadCCW;
+            elemHeadCCW = elemHeadCCW->next;
+            headCCW = elemHeadCCW->hullPoint;
+            tailCCW = elemTailCCW->hullPoint;
+            tailCCW->Show();
+            headCCW->Show();
+            d = (point.x - headCCW->x) * (tailCCW->y - headCCW->y) - (tailCCW->x - headCCW->x) * (point.y - headCCW->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+            cout<<d<<endl<<endl;
+
+            //Continuo a girare in senso antiorario
+            while (d<0)
+            {
+                //Aggiunta del nuovo triangolo
+                Triangle newGuideTriangle = Triangle(point, *headCCW, *tailCCW);
+                lastTriangle = newGuideTriangle;
+                meshTriangles.push_back(newGuideTriangle);
+                guideTriangles.push_back(newGuideTriangle);
+                newGuideTriangle.Show();
+                cout<<endl;
+
+                //Eliminazione dal convex hull dell'elemento in coda al vettore
+                delete elemTailCCW->hullPoint;
+                delete elemTailCCW;
+
+                //Spostamento al vettore successivo
+                elemTailCCW = elemHeadCCW;
+                elemHeadCCW = elemHeadCCW->next;
+                headCCW = elemHeadCCW->hullPoint;
+                tailCCW = elemTailCCW->hullPoint;
+                tailCCW->Show();
+                headCCW->Show();
+                d = (point.x - headCCW->x) * (tailCCW->y - headCCW->y) - (tailCCW->x - headCCW->x) * (point.y - headCCW->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+                cout<<d<<endl<<endl;
+            }
+
+            //Aggiunta di un nuovo legame nel convex hull
+            elemTailCCW->SetPrev(newElem);
+            newElem->SetNext(elemTailCCW);
+            elemTailCCW->SetTriangle(&lastTriangle);
+
+
+            //...DA ELIMINARE...
+            convexHullElem* successivoNewElem = newElem->next;
+            cout<<"Ultimo punto da collegare: ";
+            successivoNewElem->hullPoint->Show();
+            cout<<endl;
+            //..................
+        }
+
+        //SE IL PRIMO LATO E' DA COLLEGARE
+        else if (d<0)
+        {
+            Triangle lastTriangle;
+            //Inizio a girare in senso antiorario
+            while (d<0)
+            {
+                //Aggiunta del nuovo triangolo
+                Triangle newGuideTriangle = Triangle(point, *headCCW, *tailCCW);
+                lastTriangle = newGuideTriangle;
+                meshTriangles.push_back(newGuideTriangle);
+                guideTriangles.push_back(newGuideTriangle);
+                newGuideTriangle.Show();
+                cout<<endl;
+
+                //Eliminazione dal convex hull dell'elemento in coda al vettore
+                delete elemTailCCW->hullPoint;
+                delete elemTailCCW;
+
+                //Spostamento al vettore successivo
+                elemTailCCW = elemHeadCCW;
+                elemHeadCCW = elemHeadCCW->next;
+                headCCW = elemHeadCCW->hullPoint;
+                tailCCW = elemTailCCW->hullPoint;
+                tailCCW->Show();
+                headCCW->Show();
+                d = (point.x - headCCW->x) * (tailCCW->y - headCCW->y) - (tailCCW->x - headCCW->x) * (point.y - headCCW->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+                cout<<d<<endl;
+                cout<<endl;
+            }
+
+            //Aggiunta di un nuovo elemento nel convex hull
+            convexHullElem* newElem = new convexHullElem(point, lastTriangle);
+            elemTailCCW->SetPrev(newElem);
+            newElem->SetNext(elemTailCCW);
+            elemTailCCW->SetTriangle(&lastTriangle);
+
+
+            //...DA ELIMINARE...
+            convexHullElem* successivoNewElem = newElem->next;
+            cout<<"Ultimo punto da collegare: ";
+            successivoNewElem->hullPoint->Show();
+            cout<<endl;
+            //..................
+        }
+
+
+//        convexHullElem* elemHeadCW = convexHull;
+//        convexHullElem* elemTailCW = convexHull->prev;
+//        Point* headCW = elemHeadCW->hullPoint;
+//        headCW->Show();
+//        Point* tailCW = elemTailCW->hullPoint;
+//        tailCW->Show();
+        //Inizio a girare in senso orario
+        //while (tailCCW != headCW && headCCW !=headCW)
+       //        {
+       //            convexHullElem* elemHeadCW = elemTailCW;
+       //            convexHullElem* elemTailCW = elemTailCW->prev;
+       //            Point* headCW = elemHeadCW->hullPoint;
+       //            headCW->Show();
+       //            Point* tailCW = elemTailCW->hullPoint;
+       //            tailCW->Show();
+    }
+
+//    void Mesh::AddInternalPoint(Point point)
+//    {
+
+//    }
+
+
 
 
 
