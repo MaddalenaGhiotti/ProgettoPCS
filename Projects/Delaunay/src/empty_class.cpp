@@ -3,6 +3,8 @@
 #include "empty_class.hpp"
 #include <fstream>
 #include <vector>
+#include <cmath>
+#include <algorithm>
 
 
 namespace DelaunayLibrary
@@ -542,8 +544,8 @@ namespace DelaunayLibrary
 
         int n = points.size();
         intNum = (int)(sqrt(points.size()));
-        squares.resize(intNum, intNum);
-        //Eigen::Matrix<Square, intNum, intNum> squaresLocal;
+        rectangles.resize(intNum, intNum);
+        //Eigen::Matrix<Rectangle, intNum, intNum> rectanglesLocal;
         double x_min = points[0].x;
         double x_max = points[0].x;
         double y_min = points[0].y;
@@ -561,10 +563,10 @@ namespace DelaunayLibrary
             for (int j=0; j<intNum; j++){
                 double startX = x_min+intervalX*j;
                 double startY = y_min+intervalY*i;
-                squares(i,j) = Square(startX, startY);
+                rectangles(i,j) = Rectangle(startX, startY);
             }
         }
-        //squares = squaresLocal;
+        //rectangles = rectanglesLocal;
     }
 
 
@@ -573,9 +575,161 @@ namespace DelaunayLibrary
         cout<<"GRIGLIA"<<endl;
         for (int i=0; i<intNum; i++)
         {
-            for (int j=0; j<intNum; j++){cout<<"("+squares(i,j).toString()+")"<<"    ";}
+            for (int j=0; j<intNum; j++){cout<<"("+rectangles(i,j).toString()+")"<<"    ";}
             cout<<endl;
         }
         cout<<endl;
+    }
+  //-----------------------------------------------------------------------------------------------------------------
+    //ALDO
+    void Grid::pointsInRectangle(vector<Point> &points)
+    {
+        for (Point pt : points){
+            int col = fmod((pt.x - x_min), intervalX);
+            int row = fmod((pt.y - y_min), intervalY);
+            rectangles(row, col).containedPoints.push_back(pt);
+        }
+    }
+
+
+    array<Point, 4> Grid::PickFourRandomPoints(vector<Point>& points){
+       array<Point, 4> result;
+       vector<Point> shuffledPoints = points;
+       random_shuffle(shuffledPoints.begin(), shuffledPoints.end());
+       for (int i = 0; i < 4; ++i) {
+            result[i] = shuffledPoints[i];
+       }
+
+       return result;
+    }
+
+
+    array<Point, 4> Grid::Snake()
+    {
+       array<Point, 4> fourPoints;
+       array<Rectangle, 3> chosenRectangles;
+
+       string flag = "well";
+
+       // primo punto (in alto a sx)
+
+//       int i, j = 0;
+//       for (int sum = 0; sum < intNum; sum++){
+//            i = sum;
+//            if (!(rectangles(i, j).containedPoints).empty()){
+//                chosenRectangles[0] = rectangles(i, j);
+//                fourPoints[0] = rectangles(i, j).containedPoints[0];
+//            }
+//            while (i > 0){
+//                i = i - 1;
+//                j = j + 1;
+//                if (!(rectangles(i, j).containedPoints).empty()){
+//                    chosenRectangles[0] = rectangles(i, j);
+//                    fourPoints[0] = rectangles(i, j).containedPoints[0];
+//                }
+//            }
+//            j = 0;
+//       }
+
+       for (int sum = 0; sum < intNum; sum++)
+       {
+
+   int i = sum;
+           for (int j = 0; j <= sum; j++)
+           {
+               if (!(rectangles(i, j).containedPoints).empty())
+               {
+                chosenRectangles[0] = rectangles(i, j);
+                fourPoints[0] = rectangles(i, j).containedPoints[0];
+               }
+           }
+           if (i > 0)
+           {
+               i--;
+           }
+       }
+
+
+       // secondo punto (in basso a sx)
+       for (int i = intNum - 1; i >= 0; i--)
+       {
+            int k = i;
+            for (int j = 0; j <= (intNum - 1 - k); j++)
+            {
+                if (!(rectangles(i, j).containedPoints).empty())
+                {
+                 if ()
+                 chosenRectangles[0] = rectangles(i, j);
+                 fourPoints[0] = rectangles(i, j).containedPoints[0];
+                }
+                else
+                {
+                 cerr << "Rectangle already found by a previous zig-zagging." << endl;
+                 flag = "bad";
+                }
+
+                if (i < intNum - 1)
+                {
+                    i++;
+                }
+            }
+            k = 0;
+       }
+
+       // terzo punto (in alto a dx)
+       if (flag != "bad"){
+            for (int i = 0; i < m; i++){
+                for (int j = m; j >= m - i; j--){
+                    Rectangle rectangle = rectangles(i, j);
+                    vector<Point> points = rectangles.containedPoints();
+                    if (!points.empty()){
+                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1]){
+                            chosenRectangles[2] = rectangle;
+                            fourPoints[2] = points[0];
+                        }
+                        else{
+                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
+                            flag = "bad";
+                        }
+                    }
+                    if (i > 0){
+                        i--;
+                    }
+                }
+            }
+       }
+
+
+       // secondo punto (in basso a dx)
+       if (flag != "bad"){
+            for (int i = m; i >= 0; i--){
+                for (int j = m; j >= i; j--){
+                    Rectangle rectangle = rectangles(i, j);
+                    vector<Point> points = rectangles.containedPoints();
+                    if (!points.empty()){
+                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1] && rectangle != chosenRectangles[2]){
+                            fourPoints[3] = points[0];
+                        }
+                        else{
+                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
+                            flag = "bad";
+                        }
+                    }
+                    if (i < m){
+                        i++;
+                    }
+                }
+            }
+       }
+
+
+       if (flag == "true"){
+           cout << "Zig-zagging algorithm worked well! The four points obtained by zig-zagging are: " << endl;
+           return fourPoints;
+       }
+       else{
+           cout << "Zig-zagging algorithm didn't work well! Four random points are: " << endl;
+           return PickFourRandomPoints(Delaunay.pointsVector);
+       }
     }
 }

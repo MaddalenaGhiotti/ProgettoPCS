@@ -105,7 +105,7 @@ int main()
     convexHullElem* currentElem1 = elem0;
     for (int i=0; i<7; i++)
     {
-        currentElem1->hullPoint->Show();
+        cout << (currentElem1->hullPoint);
         currentElem1 = currentElem1->next;
     }
     cout<<endl;
@@ -118,7 +118,7 @@ int main()
     convexHullElem* currentElem2 = elem0;
     for (int i=0; i<8; i++)
     {
-        (currentElem2->hullPoint)->Show();
+        cout << (currentElem2->hullPoint);
         currentElem2 = currentElem2->next;
     }
     cout<<endl;

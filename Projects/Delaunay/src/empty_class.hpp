@@ -22,10 +22,15 @@ namespace DelaunayLibrary
     public:
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
-        string toString() const {return "x="+to_string(x)+"  y="+to_string(y);}
-        void Show() const {cout<<toString()<<endl;}
+        //string toString() const {return "x="+to_string(x)+"  y="+to_string(y);}
+        //void Show() const {cout<<toString()<<endl;}
     };
 
+    inline ostream& operator<<(ostream &os, const Point& point)
+    {
+      os << "x = " << point.x << " y = "  << point.y;
+      return os;
+    }
     void reorderPointsCounterclockwiseTr(Point& p1, Point& p2, Point& p3);
     void reorderPointsCounterclockwiseQ(Point& p1, Point& p2, Point& p3, Point& p4);
     double determinante(double& a11, double& a12, double& a13, double& a21, double& a22, double& a23, double& a31, double& a32, double& a33);
@@ -55,7 +60,7 @@ namespace DelaunayLibrary
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c) {vertices[0]=a;vertices[1]=b;vertices[2]=c;}
         array<Point,3> OrderVertices();
-        void Show() const { cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl; }
+        //void Show() const { cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl; }
         int ContainsPoint(Point& point);
 
     };
@@ -63,16 +68,16 @@ namespace DelaunayLibrary
     bool CheckConvex(Triangle& Triangle1, Triangle& Triangle2);
     bool DelunayProperty(Triangle& Triangle1, Triangle& Triangle2);
 
-    class Square //Cambiare in Rectangle
+    class Rectangle
     {
     public:
         double startX;
         double startY;
         vector<Triangle> crossingTriangles;
-        vector<Point> crossingPoints; //Cambiare crossing con un altro nome
+        vector<Point> containedPoints;
     public:
-        Square() = default;
-        Square(double& startX, double& startY): startX(startX), startY(startY) {}
+        Rectangle() = default;
+        Rectangle(double& startX, double& startY): startX(startX), startY(startY) {}
         string toString() const {return "startX="+to_string(startX)+"  startY="+to_string(startY);}
     };
 
@@ -82,14 +87,19 @@ namespace DelaunayLibrary
     public:
         //Altezza rettangolo e larghezza rettangolo
         int intNum;
-        Eigen::Matrix<Square, Eigen::Dynamic, Eigen::Dynamic> squares;
+        Eigen::Matrix<Rectangle, Eigen::Dynamic, Eigen::Dynamic> rectangles;
         double x_min;
         double y_min;
     public:
         Grid() = default;
         Grid(vector<Point>& points);
-        Square SquareOf(Point& point);
+        Rectangle RectangleOf(Point& point);
         void Show();
+        double intervalX;
+        double intervalY;
+        void pointsInRectangle(vector<Point> &points);
+        array<Point, 4> PickFourRandomPoints(vector<Point>& points);
+        array<Point, 4> Snake();
     };
 
 
