@@ -24,6 +24,7 @@ namespace DelaunayLibrary
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
         friend bool operator==(const Point& point1, const Point& point2){return (point1.x==point2.x && point1.y==point2.y);}
+        friend bool operator!=(const Point& point1, const Point& point2){return (point1.x!=point2.x || point1.y!=point2.y);}
     };
 
     inline ostream& operator<<(ostream& os, const Point& point)
@@ -54,15 +55,15 @@ namespace DelaunayLibrary
     {
     public: //Da capire
         Point vertices[3];
-        vector<Triangle> PointedTriangles;
-        vector<Triangle*> adiacentTriangles;
+        vector<Triangle*> pointedTriangles;
+        array<Triangle*,3> adiacentTriangles;
     public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c);
         array<Point,3> OrderVertices();
         //void Show() const {cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl;}
         int ContainsPoint(Point& point);
-        static void SetAdiacentTriangle(Triangle& triangle1,Triangle& triangle2, Point& tail, Point& head);
+        static void SetAdiacentTriangle(Triangle& triangle1,Triangle* triangle2, Point& tail, Point& head);
 
     };
 
@@ -137,6 +138,8 @@ namespace DelaunayLibrary
         void Flip(Triangle& Triangle1, Triangle& Triangle2);
         void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
         void AddExternalPoint(Point& point);
+        void AddInternalPoint(Point& point, Triangle& rootTriangle);
+        void AddSidePoint(Point& point, Triangle& rootTriangle, int side);
         void SetConvexHull(convexHullElem* elem) {convexHull=elem;}
     };
 }

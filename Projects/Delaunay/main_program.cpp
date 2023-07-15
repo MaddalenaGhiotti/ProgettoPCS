@@ -50,7 +50,8 @@ int main()
     Point point5 = Point(5,7);
     Point point6 = Point(7,2);
 
-    Point externalPoint = Point(5,-1);
+    Point externalPoint = Point(8,0);
+    Point internalPoint = Point(5,3);
 
     //Triangoli
     Triangle triangle0 = Triangle(point0, point1, point2);
@@ -107,13 +108,18 @@ int main()
     elem5->SetPrev(elem4);
     elem6->SetPrev(elem5);
 
+    //Settaggio triangoli adiacenti
+    Triangle::SetAdiacentTriangle(triangle1, &triangle2, point3, point0);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle1, point1, point0);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle3, point2, point1);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle4, point0, point2);
+
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO ESTERNO
 
     //Stampa punti convex hull
-    cout<<"ELEMENTI CONVEX HULL INIZIALE"<<endl;
+    cout<<"\nELEMENTI CONVEX HULL INIZIALE"<<endl;
     cout<<endl;
-    cout<<*(elem0->hullPoint)<<endl;
     convexHullElem* currentElem1 = mesh.convexHull;
     for (int i=0; i<7; i++)
     {
@@ -124,12 +130,11 @@ int main()
     cout<<endl;
 
     //Aggiunta di punto esterno
-    cout<<"Prima di external:\n"<<&externalPoint<<endl;
+    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
     mesh.AddExternalPoint(externalPoint);
-    cout<<"Dopo di external:\n"<<&externalPoint<<endl;
 
     //Stampa punti convex hull
-    cout<<"ELEMENTI NUOVO CONVEX HULL"<<endl;
+    cout<<"\nELEMENTI NUOVO CONVEX HULL"<<endl;
     cout<<endl;
     convexHullElem* currentElem2 = mesh.convexHull;
     for (int i=0; i<8; i++)
@@ -140,6 +145,15 @@ int main()
     }
     cout<<endl;
 
+//_______________________________________________________________________________________________________________________
+//AGGIUNTA PUNTO INTERNO
 
+    //Aggiunta di punto esterno
+    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
+    mesh.AddInternalPoint(internalPoint, triangle0);
+
+
+//_______________________________________________________________________________________________________________________
+//CHIUSURA FUNZIONE
     return 0;
 }
