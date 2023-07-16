@@ -61,11 +61,6 @@ namespace DelaunayLibrary
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c);
         array<Point,3> OrderVertices();
-<<<<<<< HEAD
-        //void Show() const { cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl; }
-=======
-        //void Show() const {cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl;}
->>>>>>> 0c3536f388ad430e607a42202c7054cc5248ab02
         int ContainsPoint(Point& point);
         static void SetAdiacentTriangle(Triangle& triangle1,Triangle* triangle2, Point& tail, Point& head);
 

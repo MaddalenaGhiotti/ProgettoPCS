@@ -122,12 +122,8 @@ int main()
     convexHullElem* currentElem1 = mesh.convexHull;
     for (int i=0; i<7; i++)
     {
-<<<<<<< HEAD
-        cout << (currentElem1->hullPoint);
-=======
         cout<<*(currentElem1->hullPoint);
         cout<<*(currentElem1->externalTriangle);
->>>>>>> 0c3536f388ad430e607a42202c7054cc5248ab02
         currentElem1 = currentElem1->next;
     }
     cout<<endl;
@@ -142,12 +138,8 @@ int main()
     convexHullElem* currentElem2 = mesh.convexHull;
     for (int i=0; i<8; i++)
     {
-<<<<<<< HEAD
-        cout << (currentElem2->hullPoint);
-=======
         cout<<*(currentElem2->hullPoint);
         cout<<*(currentElem2->externalTriangle);
->>>>>>> 0c3536f388ad430e607a42202c7054cc5248ab02
         currentElem2 = currentElem2->next;
     }
     cout<<endl;
