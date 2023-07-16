@@ -50,9 +50,6 @@ int main()
     Point point5 = Point(5,7);
     Point point6 = Point(7,2);
 
-    Point externalPoint = Point(8,0);
-    Point internalPoint = Point(5,3);
-
     //Triangoli
     Triangle triangle0 = Triangle(point0, point1, point2);
     Triangle triangle1 = Triangle(point0, point1, point3);
@@ -117,6 +114,8 @@ int main()
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO ESTERNO
 
+    Point externalPoint = Point(8,0);
+
     //Stampa punti convex hull
     cout<<"\nELEMENTI CONVEX HULL INIZIALE"<<endl;
     cout<<endl;
@@ -148,10 +147,24 @@ int main()
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO INTERNO
 
-    //Aggiunta di punto esterno
-    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
-    mesh.AddInternalPoint(internalPoint, triangle0);
+    Mesh meshInternal = Mesh(triangle0);
 
+    Point internalPoint1 = Point(5,3);
+    Point internalPoint2 = Point(5,4);
+    Point internalPoint3 = Point(6,3);
+
+    //Aggiunta di punto interno
+    cout<<"Nuovi punti interni da aggiungere:\n"<<internalPoint1<<internalPoint2<<internalPoint3<<endl;
+    meshInternal.AddInternalPoint(internalPoint1, triangle0);
+    meshInternal.AddInternalPoint(internalPoint2, triangle0);
+    //meshInternal.AddInternalPoint(internalPoint3, triangle0);
+
+    for (Triangle tr:meshInternal.lastMesh){cout<<tr<<endl;}
+
+    cout<<"Figli del grosso"<<endl;
+    for (Triangle* trPtr:triangle0.pointedTriangles){cout<<*trPtr<<endl;}
+
+    cout<<"Indirizzo di memoria di triangle0   "<<&triangle0<<endl;
 
 //_______________________________________________________________________________________________________________________
 //CHIUSURA FUNZIONE

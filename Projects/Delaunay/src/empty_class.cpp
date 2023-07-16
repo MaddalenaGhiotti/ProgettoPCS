@@ -568,89 +568,114 @@ namespace DelaunayLibrary
         }
     }
 
-    void Mesh::AddInternalPoint(Point& point, Triangle& rootTriangle)
+    Triangle* Mesh::FromRootToLeaf(Point& point, Triangle& rootTriangle)
     {
-        if (rootTriangle.pointedTriangles.empty())
+        if (rootTriangle.pointedTriangles.empty()){return &rootTriangle;}
+        cout<<"Il vettore non è vuoto"<<endl;
+        for (Triangle* tr:rootTriangle.pointedTriangles)
         {
-            int cont = rootTriangle.ContainsPoint(point);
-            cout<<"Il vettore è vuoto"<<endl;
-            if (cont==0)
-            {
-                //Creazione dei nuovi triangoli
-                Triangle triangle1 = Triangle(rootTriangle.vertices[0], rootTriangle.vertices[1], point);
-                Triangle triangle2 = Triangle(rootTriangle.vertices[1], rootTriangle.vertices[2], point);
-                Triangle triangle3 = Triangle(rootTriangle.vertices[2], rootTriangle.vertices[0], point);
-                //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
-                rootTriangle.pointedTriangles.push_back(&triangle1);
-                rootTriangle.pointedTriangles.push_back(&triangle2);
-                rootTriangle.pointedTriangles.push_back(&triangle3);
-                //Aggiornamento adiacenze
-                Triangle::SetAdiacentTriangle(triangle1, rootTriangle.adiacentTriangles[0], (rootTriangle.vertices[0]), (rootTriangle.vertices[1]));
-                Triangle::SetAdiacentTriangle(triangle2, rootTriangle.adiacentTriangles[1], rootTriangle.vertices[1], rootTriangle.vertices[2]);
-                Triangle::SetAdiacentTriangle(triangle3, rootTriangle.adiacentTriangles[2], rootTriangle.vertices[2], rootTriangle.vertices[0]);
-
-                Triangle::SetAdiacentTriangle(triangle1, &triangle2, rootTriangle.vertices[1], point);
-                Triangle::SetAdiacentTriangle(triangle2, &triangle3, rootTriangle.vertices[2], point);
-                Triangle::SetAdiacentTriangle(triangle3, &triangle1, rootTriangle.vertices[0], point);
-                //Aggiunta triangoli a leaf mesh (?)
-                //Rimozione triangolo radice da leaf mesh (?)
-                //Aggiornamento triangoli adiacenti al convex hull (?)
-                //Verifica Delaunay
-            }
-            else if (cont!=-1 && cont!=0){AddSidePoint(point, rootTriangle, cont);}
-        }
-        else
-        {
-            cout<<"Il vettore non è vuoto"<<endl;
-            for (Triangle* tr:rootTriangle.pointedTriangles)
-            {
-                if (tr->ContainsPoint(point)!=-1){AddInternalPoint(point,*tr);}
-            }
+            if (tr->ContainsPoint(point)!=-1){return FromRootToLeaf(point, *tr);}
         }
     }
 
-    void Mesh::AddSidePoint(Point& point, Triangle& relRootTriangle, int side)
+    void Mesh::AddInternalPoint(Point& point, Triangle& rootTriangle)
     {
-        if (relRootTriangle.adiacentTriangles[side-1]!=nullptr)
+        //Aggiungere anche da point a rootTriangle
+        Triangle* bigTrianglePtr = FromRootToLeaf(point, rootTriangle);
+        Triangle bigTriangle = *bigTrianglePtr;
+        //cout<<bigTrianglePtr<<endl;
+        int cont = bigTrianglePtr->ContainsPoint(point);
+        if (cont==0)
         {
-            Triangle* adiacentTrPtr = relRootTriangle.adiacentTriangles[side-1];
+            //Creazione dei nuovi triangoli
+            Triangle* triangle1 = new Triangle(bigTrianglePtr->vertices[0], bigTrianglePtr->vertices[1], point);
+            Triangle* triangle2 = new Triangle(bigTrianglePtr->vertices[1], bigTrianglePtr->vertices[2], point);
+            Triangle* triangle3 = new Triangle(bigTrianglePtr->vertices[2], bigTrianglePtr->vertices[0], point);
+            //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
+            bigTrianglePtr->pointedTriangles.push_back(triangle1);
+            bigTrianglePtr->pointedTriangles.push_back(triangle2);
+            bigTrianglePtr->pointedTriangles.push_back(triangle3);
+            //cout<<"Stampa pointed triangles dentro metodo"<<endl;
+            //for (Triangle* trPtr:bigTrianglePtr->pointedTriangles){cout<<*trPtr<<endl;}
+            //cout<<"Fine stampa dentro metodo"<<endl;
+            //Aggiornamento adiacenze
+            Triangle::SetAdiacentTriangle(*triangle1, bigTrianglePtr->adiacentTriangles[0], (bigTrianglePtr->vertices[0]), (bigTrianglePtr->vertices[1]));
+            Triangle::SetAdiacentTriangle(*triangle2, bigTrianglePtr->adiacentTriangles[1], bigTrianglePtr->vertices[1], bigTrianglePtr->vertices[2]);
+            Triangle::SetAdiacentTriangle(*triangle3, bigTrianglePtr->adiacentTriangles[2], bigTrianglePtr->vertices[2], bigTrianglePtr->vertices[0]);
+            Triangle::SetAdiacentTriangle(*triangle1, triangle2, bigTrianglePtr->vertices[1], point);
+            Triangle::SetAdiacentTriangle(*triangle2, triangle3, bigTrianglePtr->vertices[2], point);
+            Triangle::SetAdiacentTriangle(*triangle3, triangle1, bigTrianglePtr->vertices[0], point);
+            //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(*triangle1);
+            lastMesh.push_back(*triangle2);
+            lastMesh.push_back(*triangle3);
+            //Rimozione triangolo radice da leaf mesh (?)
+            //Aggiornamento triangoli adiacenti al convex hull (?)
+            //Verifica Delaunay
+        }
+        else {AddSidePoint(point, *bigTrianglePtr, cont);}
+    }
+
+    void Mesh::AddSidePoint(Point& point, Triangle& bigTriangle, int side)
+    {
+        //Se il punto è su un lato tra due triangoli
+        if (bigTriangle.adiacentTriangles[side-1]!=nullptr)
+        {
+            Triangle* adiacentTrPtr = bigTriangle.adiacentTriangles[side-1];
             Point* oppositPointPtr;
+            int commonSidePos;
+            int i=0;
             for (Point pt:adiacentTrPtr->vertices){
-                if (pt!=relRootTriangle.vertices[side-1] && pt!=relRootTriangle.vertices[side%3]){oppositPointPtr=&pt;}
+                if (pt!=bigTriangle.vertices[side-1] && pt!=bigTriangle.vertices[side%3]){oppositPointPtr=&pt; commonSidePos=(i+1)%3;}
+                i++;
             }
             //Creazione dei nuovi triangoli
-            Triangle triangle1 = Triangle(relRootTriangle.vertices[side-1], relRootTriangle.vertices[(side+1)%3], point);
-            Triangle triangle2 = Triangle(relRootTriangle.vertices[side%3], relRootTriangle.vertices[(side+1)%3], point);
-            Triangle triangle3 = Triangle(relRootTriangle.vertices[side-1], *oppositPointPtr, point);
-            Triangle triangle4 = Triangle(relRootTriangle.vertices[side%3], *oppositPointPtr, point);
+            Triangle triangle1 = Triangle(bigTriangle.vertices[side-1], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle2 = Triangle(bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle3 = Triangle(bigTriangle.vertices[side-1], *oppositPointPtr, point);
+            Triangle triangle4 = Triangle(bigTriangle.vertices[side%3], *oppositPointPtr, point);
             //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
-            relRootTriangle.pointedTriangles.push_back(&triangle1);
-            relRootTriangle.pointedTriangles.push_back(&triangle2);
+            bigTriangle.pointedTriangles.push_back(&triangle1);
+            bigTriangle.pointedTriangles.push_back(&triangle2);
             adiacentTrPtr->pointedTriangles.push_back(&triangle3);
             adiacentTrPtr->pointedTriangles.push_back(&triangle4);
             //Aggiornamento adiacenze
-            Triangle::SetAdiacentTriangle(triangle1, rootTriangle.adiacentTriangles[0], (rootTriangle.vertices[0]), (rootTriangle.vertices[1]));
-            Triangle::SetAdiacentTriangle(triangle2, rootTriangle.adiacentTriangles[1], rootTriangle.vertices[1], rootTriangle.vertices[2]);
-            Triangle::SetAdiacentTriangle(triangle3, rootTriangle.adiacentTriangles[2], rootTriangle.vertices[2], rootTriangle.vertices[0]);
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle3, adiacentTrPtr->adiacentTriangles[(commonSidePos+1)%3], bigTriangle.vertices[side-1], *oppositPointPtr);
+            Triangle::SetAdiacentTriangle(triangle4, adiacentTrPtr->adiacentTriangles[(commonSidePos+2)%3], *oppositPointPtr, bigTriangle.vertices[side%3]);
 
-            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, relRootTriangle.vertices[(side+1)%3]);
-            Triangle::SetAdiacentTriangle(triangle3, &triangle4, rootTriangle.vertices[2], point);
-            Triangle::SetAdiacentTriangle(triangle1, &triangle3, rootTriangle.vertices[0], point);
-            Triangle::SetAdiacentTriangle(triangle2, &triangle4, rootTriangle.vertices[0], point);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle3, &triangle4, *oppositPointPtr, point);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle3, bigTriangle.vertices[side-1], point);
+            Triangle::SetAdiacentTriangle(triangle2, &triangle4, point, bigTriangle.vertices[side%3]);
             //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(triangle1);
+            lastMesh.push_back(triangle2);
+            lastMesh.push_back(triangle3);
+            lastMesh.push_back(triangle4);
             //Rimozione triangoli radice da leaf mesh (?)
             //Aggiornamento triangoli adiacenti al convex hull (?)
             //Verifica Delaunay
         }
+        //Se il punto è su un lato del ConvexHull
         else
         {
             //Creazione dei nuovi triangoli
-            Triangle triangle1 = Triangle(relRootTriangle.vertices[side-1], relRootTriangle.vertices[(side+1)%3], point);
-            Triangle triangle2 = Triangle(relRootTriangle.vertices[side%3], relRootTriangle.vertices[(side+1)%3], point);
+            Triangle triangle1 = Triangle(bigTriangle.vertices[side-1], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle2 = Triangle(bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3], point);
             //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
+            bigTriangle.pointedTriangles.push_back(&triangle1);
+            bigTriangle.pointedTriangles.push_back(&triangle2);
             //Aggiornamento adiacenze
-            //Aggiornamento convexHull !!
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
+            //Aggiornamento convexHull
+
             //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(triangle1);
+            lastMesh.push_back(triangle2);
             //Rimozione triangoli radice da leaf mesh (?)
             //Verifica Delaunay
         }

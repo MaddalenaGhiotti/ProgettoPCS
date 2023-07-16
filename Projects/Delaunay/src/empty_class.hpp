@@ -139,8 +139,9 @@ namespace DelaunayLibrary
         void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
         void AddExternalPoint(Point& point);
         void AddInternalPoint(Point& point, Triangle& rootTriangle);
-        void AddSidePoint(Point& point, Triangle& rootTriangle, int side);
+        void AddSidePoint(Point& point, Triangle& bigTriangle, int side);
         void SetConvexHull(convexHullElem* elem) {convexHull=elem;}
+        Triangle* FromRootToLeaf(Point& point, Triangle& rootTriangle);
     };
 }
 
