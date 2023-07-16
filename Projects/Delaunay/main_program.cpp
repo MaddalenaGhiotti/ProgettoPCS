@@ -15,8 +15,14 @@ int main()
     delaunay.Show();
 
 
-////_______________________________________________________________________________________________________________________
-////// CHECK DELUNAY
+//_______________________________________________________________________________________________________________________
+//CREAZIONE E STAMPA GRIGLIA
+
+    Grid grid = Grid(delaunay.pointsVector);
+    grid.Show();
+
+//_______________________________________________________________________________________________________________________
+//CHECK DELUNAY
     Point a = Point(0, 2);
     Point b = Point(4, 2);
     Point c = Point(2, 1);
@@ -32,14 +38,8 @@ int main()
        cout << "da flippare" << endl;
     }
 
-////_______________________________________________________________________________________________________________________
-//CREAZIONE E STAMPA GRIGLIA
-
-    Grid grid = Grid(delaunay.pointsVector);
-    //grid.Show();
-
-////_______________________________________________________________________________________________________________________
-////ESEMPIO MESH
+//_______________________________________________________________________________________________________________________
+//ESEMPIO MESH
 
     //Punti
     Point point0 = Point(4,0);
@@ -50,7 +50,7 @@ int main()
     Point point5 = Point(5,7);
     Point point6 = Point(7,2);
 
-    Point externalPoint = Point(8,0);
+    Point externalPoint = Point(5,-1);
 
     //Triangoli
     Triangle triangle0 = Triangle(point0, point1, point2);
@@ -61,6 +61,9 @@ int main()
 
     //Aggiunta triangoli
     Mesh mesh = Mesh(triangle0);
+    cout<<"Stampa riga di verifica"<<endl;
+    cout<<*(mesh.convexHull->hullPoint)<<endl;
+
     mesh.meshTriangles.push_back(triangle1);
     mesh.meshTriangles.push_back(triangle2);
     mesh.meshTriangles.push_back(triangle3);
@@ -73,12 +76,19 @@ int main()
 
     //Elementi convex hull
     convexHullElem* elem0 = mesh.convexHull;
+    //cout<<*(mesh.convexHull->hullPoint)<<endl;
+    //cout<<*(elem0->hullPoint)<<endl;
     convexHullElem* elem1 = new convexHullElem(point6, triangle4);
-    convexHullElem* elem2 = elem0->next;  //new convexHullElem(point2, triangle4);
+    convexHullElem* elem2 = new convexHullElem(point2, triangle4);
     convexHullElem* elem3 = new convexHullElem(point5, triangle3);
-    convexHullElem* elem4 = elem2->next;  //new convexHullElem(point1, triangle3);
+    convexHullElem* elem4 = new convexHullElem(point1, triangle3);
     convexHullElem* elem5 = new convexHullElem(point3, triangle1);
     convexHullElem* elem6 = new convexHullElem(point4, triangle2);
+
+    //Aggiornamento triangoli convex hull
+    elem0->SetTriangle(&triangle2);
+    elem2->SetTriangle(&triangle4);
+    elem4->SetTriangle(&triangle3);
 
     //Connessioni convex hull
     elem0->SetNext(elem1);
@@ -101,24 +111,39 @@ int main()
 //AGGIUNTA PUNTO ESTERNO
 
     //Stampa punti convex hull
-    cout<<"PUNTI CONVEX HULL INIZIALE"<<endl;
-    convexHullElem* currentElem1 = elem0;
+    cout<<"ELEMENTI CONVEX HULL INIZIALE"<<endl;
+    cout<<endl;
+    cout<<*(elem0->hullPoint)<<endl;
+    convexHullElem* currentElem1 = mesh.convexHull;
     for (int i=0; i<7; i++)
     {
+<<<<<<< HEAD
         cout << (currentElem1->hullPoint);
+=======
+        cout<<*(currentElem1->hullPoint);
+        cout<<*(currentElem1->externalTriangle);
+>>>>>>> 0c3536f388ad430e607a42202c7054cc5248ab02
         currentElem1 = currentElem1->next;
     }
     cout<<endl;
 
     //Aggiunta di punto esterno
+    cout<<"Prima di external:\n"<<&externalPoint<<endl;
     mesh.AddExternalPoint(externalPoint);
+    cout<<"Dopo di external:\n"<<&externalPoint<<endl;
 
     //Stampa punti convex hull
-    cout<<"PUNTI NUOVO CONVEX HULL"<<endl;
-    convexHullElem* currentElem2 = elem0;
+    cout<<"ELEMENTI NUOVO CONVEX HULL"<<endl;
+    cout<<endl;
+    convexHullElem* currentElem2 = mesh.convexHull;
     for (int i=0; i<8; i++)
     {
+<<<<<<< HEAD
         cout << (currentElem2->hullPoint);
+=======
+        cout<<*(currentElem2->hullPoint);
+        cout<<*(currentElem2->externalTriangle);
+>>>>>>> 0c3536f388ad430e607a42202c7054cc5248ab02
         currentElem2 = currentElem2->next;
     }
     cout<<endl;
