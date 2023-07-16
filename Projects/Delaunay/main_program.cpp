@@ -50,8 +50,6 @@ int main()
     Point point5 = Point(5,7);
     Point point6 = Point(7,2);
 
-    Point externalPoint = Point(5,-1);
-
     //Triangoli
     Triangle triangle0 = Triangle(point0, point1, point2);
     Triangle triangle1 = Triangle(point0, point1, point3);
@@ -107,13 +105,20 @@ int main()
     elem5->SetPrev(elem4);
     elem6->SetPrev(elem5);
 
+    //Settaggio triangoli adiacenti
+    Triangle::SetAdiacentTriangle(triangle1, &triangle2, point3, point0);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle1, point1, point0);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle3, point2, point1);
+    Triangle::SetAdiacentTriangle(triangle0, &triangle4, point0, point2);
+
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO ESTERNO
 
+    Point externalPoint = Point(8,0);
+
     //Stampa punti convex hull
-    cout<<"ELEMENTI CONVEX HULL INIZIALE"<<endl;
+    cout<<"\nELEMENTI CONVEX HULL INIZIALE"<<endl;
     cout<<endl;
-    cout<<*(elem0->hullPoint)<<endl;
     convexHullElem* currentElem1 = mesh.convexHull;
     for (int i=0; i<7; i++)
     {
@@ -128,12 +133,11 @@ int main()
     cout<<endl;
 
     //Aggiunta di punto esterno
-    cout<<"Prima di external:\n"<<&externalPoint<<endl;
+    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
     mesh.AddExternalPoint(externalPoint);
-    cout<<"Dopo di external:\n"<<&externalPoint<<endl;
 
     //Stampa punti convex hull
-    cout<<"ELEMENTI NUOVO CONVEX HULL"<<endl;
+    cout<<"\nELEMENTI NUOVO CONVEX HULL"<<endl;
     cout<<endl;
     convexHullElem* currentElem2 = mesh.convexHull;
     for (int i=0; i<8; i++)
@@ -148,6 +152,29 @@ int main()
     }
     cout<<endl;
 
+//_______________________________________________________________________________________________________________________
+//AGGIUNTA PUNTO INTERNO
 
+    Mesh meshInternal = Mesh(triangle0);
+
+    Point internalPoint1 = Point(5,3);
+    Point internalPoint2 = Point(5,4);
+    Point internalPoint3 = Point(6,3);
+
+    //Aggiunta di punto interno
+    cout<<"Nuovi punti interni da aggiungere:\n"<<internalPoint1<<internalPoint2<<internalPoint3<<endl;
+    meshInternal.AddInternalPoint(internalPoint1, triangle0);
+    meshInternal.AddInternalPoint(internalPoint2, triangle0);
+    //meshInternal.AddInternalPoint(internalPoint3, triangle0);
+
+    for (Triangle tr:meshInternal.lastMesh){cout<<tr<<endl;}
+
+    cout<<"Figli del grosso"<<endl;
+    for (Triangle* trPtr:triangle0.pointedTriangles){cout<<*trPtr<<endl;}
+
+    cout<<"Indirizzo di memoria di triangle0   "<<&triangle0<<endl;
+
+//_______________________________________________________________________________________________________________________
+//CHIUSURA FUNZIONE
     return 0;
 }

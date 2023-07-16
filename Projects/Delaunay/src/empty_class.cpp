@@ -18,13 +18,13 @@ namespace DelaunayLibrary
 //        firstTriangle = Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
 //        Mesh mesh = Mesh(firstTriangle); //Decidere come gestire Convex Hull
 //        //Delaunay con quarto punto
-//        int position = ContainsPoint(firstPoints[4]); //Controllare se è interno o esterno
+//        int position = firstTriangle.ContainsPoint(firstPoints[4]); //Controllare se è interno o esterno
 //        if (position == -1){mesh.AddExternalPoint(firstPoints[4]);}
 //        else if (position == 0) {mesh.AddInternalPoint(firstPoints[4], firstTriangle);}
 //        else {} //Da capire
 //        for (Point point : pointsVector)
 //        {
-//            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo a cui è interno)
+//            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo guida a cui è interno)
 //            // If interno AddInternalPoint, if external AddExternalPoint.
 //        }
 //        mesh.MeshToEdges();
@@ -50,6 +50,7 @@ namespace DelaunayLibrary
         double crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
         if (crossProduct < 0){vertices[0]=p1; vertices[1]=p3; vertices[2]=p2;}
         else {vertices[0]=p1; vertices[1]=p2; vertices[2]=p3;}
+        adiacentTriangles = {nullptr, nullptr, nullptr};
     }
 
 //Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
@@ -71,16 +72,17 @@ namespace DelaunayLibrary
         return 3; //Per esclusione il punto si trova sul terzo lato
     }
 
-    void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle& addingTriangle, Point& tail, Point& head)
+    void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle* addingTriangle, Point& tail, Point& head) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
     {
         //Settare triangolo adiacente a triangolo già esistente
-        if (existingTriangle.vertices[0] == tail){existingTriangle.adiacentTriangles[0] = &addingTriangle;}
-        else if (existingTriangle.vertices[1] == tail){existingTriangle.adiacentTriangles[1] = &addingTriangle;}
-        else {existingTriangle.adiacentTriangles[2] = &addingTriangle;}
+        if (existingTriangle.vertices[0] == tail){existingTriangle.adiacentTriangles[0] = addingTriangle;}
+        else if (existingTriangle.vertices[1] == tail){existingTriangle.adiacentTriangles[1] = addingTriangle;}
+        else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
         //Settare triangolo adiacente a triangolo aggiunto
-        if (addingTriangle.vertices[0] == head){addingTriangle.adiacentTriangles[0] = &existingTriangle;}
-        else if (addingTriangle.vertices[1] == head){addingTriangle.adiacentTriangles[1] = &existingTriangle;}
-        else {addingTriangle.adiacentTriangles[2] = &existingTriangle;}
+        if (addingTriangle!=nullptr){
+            if (addingTriangle->vertices[0] == head){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
+            else if (addingTriangle->vertices[1] == head){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
+            else {addingTriangle->adiacentTriangles[2] = &existingTriangle;}}
     }
 
     Delaunay::Delaunay(const string& inputFileName)
@@ -355,7 +357,6 @@ namespace DelaunayLibrary
     {
         meshTriangles.push_back(triangle);
         guideTriangles.push_back(triangle);
-        //array<Point,3> orderedPoints = triangle.OrderVertices();
         //Creazione dei tre oggetti Convex Hull
         convexHull = new convexHullElem(triangle.vertices[0], triangle);
         //convexHullElem* firstElem = new convexHullElem(triangle.vertices[0], triangle);
@@ -376,21 +377,18 @@ namespace DelaunayLibrary
 
     void Mesh::AddExternalPoint(Point& point)
     {
-        cout<<"Appena entrati nella funzione:\n"<<&point<<endl;
         vector<Triangle*> newTriangles;
         convexHullElem* newElem;
 
-        cout<<"PRIMO PUNTO CONVEX HULL"<<endl;
+        //cout<<"PRIMO PUNTO CONVEX HULL"<<endl;
         convexHullElem* elemHead = convexHull->next;
         convexHullElem* elemTail = convexHull;
         Point* head = elemHead->hullPoint;
         Point* tail = elemTail->hullPoint;
-        cout<<*tail;
-        cout<<*head;
+        //cout<<*tail;
+        //cout<<*head;
 
         double d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-        cout<<d<<endl;
-        cout<<endl;
 
         //SE IL PRIMO LATO NON E' DA COLLEGARE
         if (d>=0)
@@ -403,42 +401,41 @@ namespace DelaunayLibrary
                 elemHead = elemHead->next;
                 head = elemHead->hullPoint;
                 tail = elemTail->hullPoint;
-                cout<<*tail;
-                cout<<*head;
+                //cout<<*tail;
+                //cout<<*head;
                 d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-                cout<<d<<endl<<endl;
+                //cout<<d<<endl<<endl;
             }
             //Aggiunta di un nuovo triangolo
             Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
-//            newTriangles.push_back(newGuideTriangle);
-//            meshTriangles.push_back(newGuideTriangle);
-//            guideTriangles.push_back(newGuideTriangle);
-            cout<<*newGuideTriangle;
+            newTriangles.push_back(newGuideTriangle);
+            //meshTriangles.push_back(newGuideTriangle);
+            guideTriangles.push_back(*newGuideTriangle);
+            Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+            cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
             cout<<endl;
 
             //Aggiunta di un nuovo elemento nel convex hull
             newElem = new convexHullElem(point, *newGuideTriangle);
-            cout<<"Indirizzo interno alla funzione\n"<<&point<<endl;
-            cout<<"Indirizzo interno all'elemento\n"<<newElem->hullPoint<<endl;
             newElem->SetPrev(elemTail);
             elemTail->SetNext(newElem);
 
-            //...DA ELIMINARE...
-            //newElem->SetNext(firstElem);
-            Point* firstRight = tail;
-            cout<<"Primo punto da collegare: ";
-            cout<<*firstRight;
-            cout<<endl;
-            //..................
+//            //...DA ELIMINARE...
+//            //newElem->SetNext(firstElem);
+//            Point* firstRight = tail;
+//            cout<<"Primo punto da collegare: ";
+//            cout<<*firstRight;
+//            cout<<endl;
+//            //..................
 
             elemTail = elemHead;
             elemHead = elemHead->next;
             head = elemHead->hullPoint;
             tail = elemTail->hullPoint;
-            cout<<*tail;
-            cout<<*head;
+            //cout<<*tail;
+            //cout<<*head;
             d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-            cout<<d<<endl<<endl;
+            //cout<<d<<endl<<endl;
 
             //Continuo a girare in senso antiorario
             while (d<0)
@@ -447,23 +444,24 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-//                guideTriangles.push_back(newGuideTriangle);
-                cout<<*newGuideTriangle;
+                guideTriangles.push_back(*newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
                 //Eliminazione dal convex hull dell'elemento in coda al vettore
                 //delete (elemTail->hullPoint);
-                //delete elemTail;
+                delete elemTail;
 
                 //Spostamento al vettore successivo
                 elemTail = elemHead;
                 elemHead = elemHead->next;
                 head = elemHead->hullPoint;
                 tail = elemTail->hullPoint;
-                cout<<*tail;
-                cout<<*head;
+                //cout<<*tail;
+                //cout<<*head;
                 d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-                cout<<d<<endl<<endl;
+                //cout<<d<<endl<<endl;
             }
 
             //Aggiunta di un nuovo legame nel convex hull
@@ -472,12 +470,12 @@ namespace DelaunayLibrary
             elemTail->SetTriangle(newTriangles.back());
 
 
-            //...DA ELIMINARE...
-            convexHullElem* successivoNewElem = newElem->next;
-            cout<<"Ultimo punto da collegare: ";
-            cout<<*(successivoNewElem->hullPoint);
-            cout<<endl;
-            //..................
+//            //...DA ELIMINARE...
+//            convexHullElem* successivoNewElem = newElem->next;
+//            cout<<"Ultimo punto da collegare: ";
+//            cout<<*(successivoNewElem->hullPoint);
+//            cout<<endl;
+//            //..................
         }
 
         //SE IL PRIMO LATO E' DA COLLEGARE
@@ -491,15 +489,16 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-//                guideTriangles.push_back(newGuideTriangle);
-                cout<<*newGuideTriangle;
+                guideTriangles.push_back(*newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
                 //Eliminazione dal convex hull dell'elemento in coda al vettore
                 if (i!=0)
                 {
                     //delete (elemTail->hullPoint);
-                    //delete elemTail;
+                    delete elemTail;
                 }
 
                 //Spostamento al vettore successivo
@@ -507,38 +506,29 @@ namespace DelaunayLibrary
                 elemHead = elemHead->next;
                 head = elemHead->hullPoint;
                 tail = elemTail->hullPoint;
-                cout<<*tail;
-                cout<<*head;
                 d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-                cout<<d<<endl;
-                cout<<endl;
                 i++;
             }
 
             //Aggiunta di un nuovo elemento nel convex hull
             newElem = new convexHullElem(point, *newTriangles.back());
-            cout<<*(newElem->hullPoint)<<endl;
-            cout<<*(newElem->externalTriangle)<<endl;
             elemTail->SetPrev(newElem);
             newElem->SetNext(elemTail);
             elemTail->SetTriangle(newTriangles.back());
 
-            //...DA ELIMINARE...
-            convexHullElem* successivoNewElem = newElem->next;
-            cout<<"Primo punto da collegare: ";
-            cout<<*(successivoNewElem->hullPoint);
-            cout<<endl;
-            //..................
+//            //...DA ELIMINARE...
+//            convexHullElem* successivoNewElem = newElem->next;
+//            cout<<"Primo punto da collegare: ";
+//            cout<<*(successivoNewElem->hullPoint);
+//            cout<<endl;
+//            //..................
 
             //Torno al punto iniziale
             elemHead = convexHull;
             elemTail = convexHull->prev;
             head = elemHead->hullPoint;
             tail = elemTail->hullPoint;
-            cout<<*tail;
-            cout<<*head;
             d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-            cout<<d<<endl<<endl;
 
             //Inizio a girare in senso orario
             while (d<0)
@@ -547,28 +537,22 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-//                guideTriangles.push_back(newGuideTriangle);
-                cout<<*newGuideTriangle;
+                guideTriangles.push_back(*newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
                 //Eliminazione dal convex hull dell'elemento in coda al vettore
                 //delete (elemHead->hullPoint);
-                //delete elemHead;
+                //delete elemHead;                            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 //Spostamento al vettore successivo
                 elemHead = elemTail;
                 elemTail = elemTail->prev;
                 head = elemHead->hullPoint;
                 tail = elemTail->hullPoint;
-                cout<<*tail;
-                cout<<*head;
-
                 d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-                cout<<d<<endl<<endl;
             }
-
-            cout<<*(newElem->hullPoint)<<endl;
-            cout<<*(newElem->externalTriangle)<<endl;
 
             //Aggiunta di un nuovo legame nel convex hull
             elemHead->SetNext(newElem);
@@ -577,20 +561,127 @@ namespace DelaunayLibrary
             SetConvexHull(newElem);
             newElem->SetTriangle(newTriangles.back());
 
-            //...DA ELIMINARE...
-            convexHullElem* precedenteNewElem = newElem->prev;
-            cout<<"Ultimo punto da collegare: ";
-            cout<<*(precedenteNewElem->hullPoint);
-            cout<<endl;
-            //..................
+//            //...DA ELIMINARE...
+//            convexHullElem* precedenteNewElem = newElem->prev;
+//            cout<<"Ultimo punto da collegare: ";
+//            cout<<*(precedenteNewElem->hullPoint);
+//            cout<<endl;
+//            //..................
         }
-        cout<<"Indirizzo interno all'elemento (dopo l'if)\n"<<newElem->hullPoint<<endl;
     }
 
-//    void Mesh::AddInternalPoint(Point point)
-//    {
+    Triangle* Mesh::FromRootToLeaf(Point& point, Triangle& rootTriangle)
+    {
+        if (rootTriangle.pointedTriangles.empty()){return &rootTriangle;}
+        cout<<"Il vettore non è vuoto"<<endl;
+        for (Triangle* tr:rootTriangle.pointedTriangles)
+        {
+            if (tr->ContainsPoint(point)!=-1){return FromRootToLeaf(point, *tr);}
+        }
+    }
 
-//    }
+    void Mesh::AddInternalPoint(Point& point, Triangle& rootTriangle)
+    {
+        //Aggiungere anche da point a rootTriangle
+        Triangle* bigTrianglePtr = FromRootToLeaf(point, rootTriangle);
+        Triangle bigTriangle = *bigTrianglePtr;
+        //cout<<bigTrianglePtr<<endl;
+        int cont = bigTrianglePtr->ContainsPoint(point);
+        if (cont==0)
+        {
+            //Creazione dei nuovi triangoli
+            Triangle* triangle1 = new Triangle(bigTrianglePtr->vertices[0], bigTrianglePtr->vertices[1], point);
+            Triangle* triangle2 = new Triangle(bigTrianglePtr->vertices[1], bigTrianglePtr->vertices[2], point);
+            Triangle* triangle3 = new Triangle(bigTrianglePtr->vertices[2], bigTrianglePtr->vertices[0], point);
+            //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
+            bigTrianglePtr->pointedTriangles.push_back(triangle1);
+            bigTrianglePtr->pointedTriangles.push_back(triangle2);
+            bigTrianglePtr->pointedTriangles.push_back(triangle3);
+            //cout<<"Stampa pointed triangles dentro metodo"<<endl;
+            //for (Triangle* trPtr:bigTrianglePtr->pointedTriangles){cout<<*trPtr<<endl;}
+            //cout<<"Fine stampa dentro metodo"<<endl;
+            //Aggiornamento adiacenze
+            Triangle::SetAdiacentTriangle(*triangle1, bigTrianglePtr->adiacentTriangles[0], (bigTrianglePtr->vertices[0]), (bigTrianglePtr->vertices[1]));
+            Triangle::SetAdiacentTriangle(*triangle2, bigTrianglePtr->adiacentTriangles[1], bigTrianglePtr->vertices[1], bigTrianglePtr->vertices[2]);
+            Triangle::SetAdiacentTriangle(*triangle3, bigTrianglePtr->adiacentTriangles[2], bigTrianglePtr->vertices[2], bigTrianglePtr->vertices[0]);
+            Triangle::SetAdiacentTriangle(*triangle1, triangle2, bigTrianglePtr->vertices[1], point);
+            Triangle::SetAdiacentTriangle(*triangle2, triangle3, bigTrianglePtr->vertices[2], point);
+            Triangle::SetAdiacentTriangle(*triangle3, triangle1, bigTrianglePtr->vertices[0], point);
+            //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(*triangle1);
+            lastMesh.push_back(*triangle2);
+            lastMesh.push_back(*triangle3);
+            //Rimozione triangolo radice da leaf mesh (?)
+            //Aggiornamento triangoli adiacenti al convex hull (?)
+            //Verifica Delaunay
+        }
+        else {AddSidePoint(point, *bigTrianglePtr, cont);}
+    }
+
+    void Mesh::AddSidePoint(Point& point, Triangle& bigTriangle, int side)
+    {
+        //Se il punto è su un lato tra due triangoli
+        if (bigTriangle.adiacentTriangles[side-1]!=nullptr)
+        {
+            Triangle* adiacentTrPtr = bigTriangle.adiacentTriangles[side-1];
+            Point* oppositPointPtr;
+            int commonSidePos;
+            int i=0;
+            for (Point pt:adiacentTrPtr->vertices){
+                if (pt!=bigTriangle.vertices[side-1] && pt!=bigTriangle.vertices[side%3]){oppositPointPtr=&pt; commonSidePos=(i+1)%3;}
+                i++;
+            }
+            //Creazione dei nuovi triangoli
+            Triangle triangle1 = Triangle(bigTriangle.vertices[side-1], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle2 = Triangle(bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle3 = Triangle(bigTriangle.vertices[side-1], *oppositPointPtr, point);
+            Triangle triangle4 = Triangle(bigTriangle.vertices[side%3], *oppositPointPtr, point);
+            //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
+            bigTriangle.pointedTriangles.push_back(&triangle1);
+            bigTriangle.pointedTriangles.push_back(&triangle2);
+            adiacentTrPtr->pointedTriangles.push_back(&triangle3);
+            adiacentTrPtr->pointedTriangles.push_back(&triangle4);
+            //Aggiornamento adiacenze
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle3, adiacentTrPtr->adiacentTriangles[(commonSidePos+1)%3], bigTriangle.vertices[side-1], *oppositPointPtr);
+            Triangle::SetAdiacentTriangle(triangle4, adiacentTrPtr->adiacentTriangles[(commonSidePos+2)%3], *oppositPointPtr, bigTriangle.vertices[side%3]);
+
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle3, &triangle4, *oppositPointPtr, point);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle3, bigTriangle.vertices[side-1], point);
+            Triangle::SetAdiacentTriangle(triangle2, &triangle4, point, bigTriangle.vertices[side%3]);
+            //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(triangle1);
+            lastMesh.push_back(triangle2);
+            lastMesh.push_back(triangle3);
+            lastMesh.push_back(triangle4);
+            //Rimozione triangoli radice da leaf mesh (?)
+            //Aggiornamento triangoli adiacenti al convex hull (?)
+            //Verifica Delaunay
+        }
+        //Se il punto è su un lato del ConvexHull
+        else
+        {
+            //Creazione dei nuovi triangoli
+            Triangle triangle1 = Triangle(bigTriangle.vertices[side-1], bigTriangle.vertices[(side+1)%3], point);
+            Triangle triangle2 = Triangle(bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3], point);
+            //Inserimento dei nuovi triangoli nel vettore dei puntati del padre
+            bigTriangle.pointedTriangles.push_back(&triangle1);
+            bigTriangle.pointedTriangles.push_back(&triangle2);
+            //Aggiornamento adiacenze
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
+            //Aggiornamento convexHull
+
+            //Aggiunta triangoli a leaf mesh (?)
+            lastMesh.push_back(triangle1);
+            lastMesh.push_back(triangle2);
+            //Rimozione triangoli radice da leaf mesh (?)
+            //Verifica Delaunay
+        }
+    }
 
     void Delaunay::Show()
     {
