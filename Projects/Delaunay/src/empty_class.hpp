@@ -21,7 +21,10 @@ namespace DelaunayLibrary
     public:
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
+        static array<Point,2> OrederSide(Point& point1, Point& point2);
         friend bool operator==(const Point& point1, const Point& point2){return (point1.x==point2.x && point1.y==point2.y);}
+        friend bool operator!=(const Point& point1, const Point& point2){return (point1.x!=point2.x || point1.y!=point2.y);}
+        friend bool operator<(const Point& point1, const Point& point2){if (point1.x!=point2.x){return point1.x<point2.x;} else {return point1.y<point2.y;}}
     };
 
     inline ostream& operator<<(ostream& os, const Point& point)
@@ -34,6 +37,7 @@ namespace DelaunayLibrary
     double determinante(double& a11, double& a12, double& a13, double& a21, double& a22, double& a23, double& a31, double& a32, double& a33);
 
 
+<<<<<<< HEAD
 
     class Delaunay
     {
@@ -49,21 +53,27 @@ namespace DelaunayLibrary
     };
 
 
+=======
+>>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
     class Triangle
     {
     public: //Da capire
         Point vertices[3];
-        vector<Triangle> PointedTriangles;
-        vector<Triangle*> adiacentTriangles;
+        vector<Triangle*> pointedTriangles;
+        array<Triangle*,3> adiacentTriangles;
     public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c);
         array<Point,3> OrderVertices();
-        //void Show() const {cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl;}
         int ContainsPoint(Point& point);
+<<<<<<< HEAD
         static void SetAdiacentTriangle(Triangle& triangle1,Triangle& triangle2, Point& tail, Point& head);
         friend bool operator==(const Triangle& triangle1, const Triangle& triangle2){return (triangle1.vertices[0]==triangle2.vertices[0] && triangle1.vertices[1]==triangle2.vertices[1] && triangle1.vertices[2]==triangle2.vertices[2]);}
 
+=======
+        Triangle* FromRootToLeaf(Point& point);
+        static void SetAdiacentTriangle(Triangle& triangle1,Triangle* triangle2, Point& tail, Point& head);
+>>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
     };
 
     inline ostream& operator<<(ostream& os, const Triangle& triangle)
@@ -74,6 +84,26 @@ namespace DelaunayLibrary
     bool CheckConvex(Triangle& Triangle1, Triangle& Triangle2);
     bool DelunayProperty(Triangle& Triangle1, Triangle& Triangle2);
 
+<<<<<<< HEAD
+=======
+
+    class Delaunay
+    {
+    public:
+        string fileName;
+        vector<Point*> pointsVector;
+        //Point* pointsArray = &pointsVector[0];
+        vector<array<Point,2>> finalEdges;
+    public:
+        Delaunay() = default;
+        Delaunay(const string& inputFileName);
+        void ExecuteDelaunay();
+        void Show();
+        void MeshToEdges(vector<Triangle*> guideTriangles);
+        void OutputEdges();
+    };
+
+>>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
     class Rectangle
     {
     public:
@@ -104,7 +134,13 @@ namespace DelaunayLibrary
         Grid(vector<Point>& points);
         Rectangle RectangleOf(Point& point);
         void Show();
+<<<<<<< HEAD
         void PointsInRectangle(vector<Point> &points);
+=======
+        double intervalX;
+        double intervalY;
+        void pointsInRectangle(vector<Point> &points);
+>>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
         array<Point, 4> PickFourRandomPoints(vector<Point>& points);
         array<Point, 4> Snake();
     };
@@ -132,7 +168,7 @@ namespace DelaunayLibrary
     public:  //Da capire
         //ConvexHull da capire, aggiungere triangoli guida (?)
         vector<Triangle> meshTriangles;
-        vector<Triangle> guideTriangles;
+        vector<Triangle*> guideTriangles;
         convexHullElem *convexHull;
         list<Triangle> lastMesh;
     public:
@@ -143,7 +179,10 @@ namespace DelaunayLibrary
         void Flip(Triangle& Triangle1, Triangle& Triangle2);
         void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
         void AddExternalPoint(Point& point);
+        void AddInternalPoint(Point& point, Triangle* rootTriangle);
+        void AddSidePoint(Point& point, Triangle& bigTriangle, int side);
         void SetConvexHull(convexHullElem* elem) {convexHull=elem;}
+        int CheckInside(Point point);
     };
 }
 
