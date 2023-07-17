@@ -3,6 +3,7 @@
 #include "empty_class.hpp"
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 
 namespace DelaunayLibrary
@@ -92,14 +93,15 @@ namespace DelaunayLibrary
         }
         string line;
         getline(file, line);
-        while (!file.eof()){
-            getline(file, line);
+        while (getline(file, line)){
+            //cout << line << endl;
             int useless;
             double x;
             double y;
             istringstream ss(line);
             ss >> useless >> x >> y;
             Point point = Point(x, y);
+            //cout << point << endl;
             pointsVector.push_back(point);
         }
     }
@@ -594,8 +596,8 @@ namespace DelaunayLibrary
     {
         cout<<"PUNTI DELAUNAY"<<endl;
         string str = "";
-        for (Point point : pointsVector){
-            cout<<point;
+        for (int i = 0; i < (int) pointsVector.size(); i++){
+            cout<< i << pointsVector[i];
         }
         cout<<endl;
     }
@@ -606,11 +608,11 @@ namespace DelaunayLibrary
 
         int n = points.size();
         intNum = (int)(sqrt(points.size()));
-        squares.resize(intNum, intNum);
+        rectangles.resize(intNum, intNum);
         //Eigen::Matrix<Square, intNum, intNum> squaresLocal;
-        double x_min = points[0].x;
+        x_min = points[0].x;
         double x_max = points[0].x;
-        double y_min = points[0].y;
+        y_min = points[0].y;
         double y_max = points[0].y;
         for (int i=1; i<n; i++)
         {
@@ -619,13 +621,13 @@ namespace DelaunayLibrary
             if (points[i].y<y_min){y_min = points[i].y;}
             if (points[i].y>y_max){y_max = points[i].y;}
         }
-        double intervalX = (x_max-x_min)/intNum;
-        double intervalY = (y_max-y_min)/intNum;
+        intervalX = (x_max-x_min)/intNum;
+        intervalY = (y_max-y_min)/intNum;
         for (int i=0; i<intNum; i++){
             for (int j=0; j<intNum; j++){
                 double startX = x_min+intervalX*j;
                 double startY = y_min+intervalY*i;
-                squares(i,j) = Square(startX, startY);
+                rectangles(i,j) = Rectangle(startX, startY);
             }
         }
         //squares = squaresLocal;
@@ -637,9 +639,195 @@ namespace DelaunayLibrary
         cout<<"GRIGLIA"<<endl;
         for (int i=0; i<intNum; i++)
         {
-            for (int j=0; j<intNum; j++){cout<<"("+squares(i,j).toString()+")"<<"    ";}
+            for (int j=0; j<intNum; j++){cout<<"("+rectangles(i,j).toString()+")"<<"    ";}
             cout<<endl;
         }
         cout<<endl;
+        //cout <<intervalX;
+        //cout <<intervalY;
+    }
+
+////////////////////// ALDO ///////////////////////
+
+    void Grid::PointsInRectangle(vector<Point> &points)
+    {
+        //int i = 0;
+        for (Point pt : points)
+        {
+            int col = floor((pt.x - x_min) / intervalX);
+            if (col == intNum)
+            {
+                col = intNum - 1;
+            }
+            int row = floor(intNum - ((pt.y - y_min) / intervalY));
+            if (row == intNum)
+            {
+                row = intNum - 1;
+            }
+            rectangles(row, col).containedPoints.push_back(pt);
+            //rectangles(row, col) = RectangleOf(pt);
+            //cout << i << " " << pt << " " << row << " " << col << " " << rectangles(row, col).containedPoints.size() << endl;
+            //i++;
+        }
+    }
+
+    array<Point, 4> Grid::PickFourRandomPoints(vector<Point>& points)
+    {
+        array<Point, 4> result;
+        vector<Point> shuffledPoints = points;
+        random_shuffle(shuffledPoints.begin(), shuffledPoints.end());
+        for (int i = 0; i < 4; ++i)
+        {
+            result[i] = shuffledPoints[i];
+        }
+
+        return result;
+    }
+
+    array<Point, 4> Grid::Snake()
+    {
+        array<Point, 4> firstPoints;
+        array<Rectangle, 3> chosenRectangles;
+        string flag = "well";
+        // primo punto (in alto a sx)
+        bool foundRectangle = false; // Variable to track if the condition is satisfied
+
+        for (int sum = 0; sum < intNum; sum++)
+        {
+            int i = sum;
+            for (int j = 0; j <= sum; j++)
+            {
+                if ((rectangles(i, j).containedPoints).empty() == false)
+                {
+                    chosenRectangles[0] = rectangles(i, j);
+                    firstPoints[0] = rectangles(i, j).containedPoints[0];
+                    foundRectangle = true;
+                    break; // Breaks out of the inner loop
+                }
+                if (i > 0)
+                {
+                    i--;
+                }
+            }
+
+            if (foundRectangle)
+            {
+                break; // Breaks out of the outer loop as well
+            }
+        }
+        //cout << firstPoints[0];
+
+        // primo punto (in basso a sx)
+
+        foundRectangle = false; // Variable to track if the condition is satisfied
+        for (int sum = intNum - 1; sum >= 0; sum--)
+        {
+            int i = sum;
+            for (int j = 0; j <= intNum - 1 - sum; j++)
+            {
+                if (rectangles(i,j) == chosenRectangles[0])
+                {
+                    flag = "bad";
+                    break;
+                }
+                if ((rectangles(i, j).containedPoints).empty() == false)
+                {
+                    chosenRectangles[1] = rectangles(i, j);
+                    firstPoints[1] = rectangles(i, j).containedPoints[0];
+                    foundRectangle = true;
+                    break; // Breaks out of the inner loop
+                }
+                if (i < intNum - 1)
+                {
+                    i++;
+                }
+            }
+
+            if (foundRectangle || flag == "bad")
+            {
+                break; // Breaks out of the outer loop as well
+            }
+        }
+        //cout << firstPoints[1];
+
+        // primo punto (in alto a dx)
+        if (flag != "bad")
+        {
+            foundRectangle = false; // Variable to track if the condition is satisfied
+
+            for (int sum = 0; sum < intNum; sum++)
+            {
+                int i = sum;
+                for (int j = intNum - 1; j >= intNum - 1 - sum; j--)
+                {
+                    if (rectangles(i,j) == chosenRectangles[0] || rectangles(i,j) == chosenRectangles[1])
+                    {
+                        flag = "bad";
+                        break;
+                    }
+                    if ((rectangles(i, j).containedPoints).empty() == false)
+                    {
+                        chosenRectangles[2] = rectangles(i, j);
+                        firstPoints[2] = rectangles(i, j).containedPoints[0];
+                        foundRectangle = true;
+                        break; // Breaks out of the inner loop
+                    }
+                    if (i > 0)
+                    {
+                        i--;
+                    }
+                }
+
+                if (foundRectangle || flag == "bad")
+                {
+                    break; // Breaks out of the outer loop as well
+                }
+            }
+        }
+        //cout << firstPoints[2];
+
+        // primo punto (in basso a dx)
+        if (flag != "bad")
+        {
+            foundRectangle = false; // Variable to track if the condition is satisfied
+
+            for (int sum = intNum - 1; sum >= 0; sum--)
+            {
+                int i = sum;
+                for (int j = intNum - 1; j >= sum; j--)
+                {
+                    if (rectangles(i,j) == chosenRectangles[0] || rectangles(i,j) == chosenRectangles[1] || rectangles(i,j) == chosenRectangles[2])
+                    {
+                       flag = "bad";
+                       break;
+                    }
+                    //cout << flag;
+                    if ((rectangles(i, j).containedPoints).empty() == false)
+                    {
+                        firstPoints[3] = rectangles(i, j).containedPoints[0];
+                        foundRectangle = true;
+                        break; // Breaks out of the inner loop
+                    }
+                    if (i < intNum - 1)
+                    {
+                        i++;
+                    }
+                }
+                if (foundRectangle || flag == "bad")
+                {
+                    break; // Breaks out of the outer loop as well
+                }
+            }
+        }
+        //cout << firstPoints[3];
+
+        if (flag == "bad")
+        {
+            cerr << "Zig-zagging algorithm didn't work well! We will then select the first points randomly!";
+            vector<Point> Del = Delaunay().getPointsVector();
+            firstPoints = PickFourRandomPoints(Del);
+        }
+        cout << "Zig-zagging algorithm worked well!" << endl;
+        return firstPoints;
     }
 }

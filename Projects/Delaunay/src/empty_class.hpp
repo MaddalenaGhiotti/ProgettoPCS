@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-//Riga aggiunta da Maddi
-//Altra riga aggiunta da Maddi
-//Ennesima riga aggiunta da Maddi
-//Enneunesima riga aggiunta da Maddi
-EVVIVA CI SIAMO
-=======
->>>>>>> origin
-
 #ifndef __EMPTY_H
 #define __EMPTY_H
 #include "Eigen/Eigen"
@@ -27,7 +18,6 @@ namespace DelaunayLibrary
     {
     public: //Da capire
         double x, y;
-        //inRectangle Tipo rettangolo a cui il punto è interno
     public:
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
@@ -55,6 +45,7 @@ namespace DelaunayLibrary
         Delaunay(const string& inputFileName);
         void ExecuteDelaunay();
         void Show();
+        vector<Point> getPointsVector(){return pointsVector;}
     };
 
 
@@ -71,6 +62,7 @@ namespace DelaunayLibrary
         //void Show() const {cout<< "TRIANGLE\n  a: "<<vertices[0].toString()<< "\n  b: "<<vertices[1].toString()<< "\n  c: "<<vertices[2].toString()<< endl;}
         int ContainsPoint(Point& point);
         static void SetAdiacentTriangle(Triangle& triangle1,Triangle& triangle2, Point& tail, Point& head);
+        friend bool operator==(const Triangle& triangle1, const Triangle& triangle2){return (triangle1.vertices[0]==triangle2.vertices[0] && triangle1.vertices[1]==triangle2.vertices[1] && triangle1.vertices[2]==triangle2.vertices[2]);}
 
     };
 
@@ -82,17 +74,18 @@ namespace DelaunayLibrary
     bool CheckConvex(Triangle& Triangle1, Triangle& Triangle2);
     bool DelunayProperty(Triangle& Triangle1, Triangle& Triangle2);
 
-    class Square //Cambiare in Rectangle
+    class Rectangle
     {
     public:
         double startX;
         double startY;
         vector<Triangle> crossingTriangles;
-        vector<Point> crossingPoints; //Cambiare crossing con un altro nome
+        vector<Point> containedPoints;
     public:
-        Square() = default;
-        Square(double& startX, double& startY): startX(startX), startY(startY) {}
+        Rectangle() = default;
+        Rectangle(double& startX, double& startY): startX(startX), startY(startY) {}
         string toString() const {return "startX="+to_string(startX)+"  startY="+to_string(startY);}
+        friend bool operator==(const Rectangle& rectangle1, const Rectangle& rectangle2){return (rectangle1.startX==rectangle2.startX && rectangle1.startY==rectangle2.startY);}
     };
 
 
@@ -101,14 +94,19 @@ namespace DelaunayLibrary
     public:
         //Altezza rettangolo e larghezza rettangolo
         int intNum;
-        Eigen::Matrix<Square, Eigen::Dynamic, Eigen::Dynamic> squares;
+        Eigen::Matrix<Rectangle, Eigen::Dynamic, Eigen::Dynamic> rectangles;
         double x_min;
         double y_min;
+        double intervalX;
+        double intervalY;
     public:
         Grid() = default;
         Grid(vector<Point>& points);
-        Square SquareOf(Point& point);
+        Rectangle RectangleOf(Point& point);
         void Show();
+        void PointsInRectangle(vector<Point> &points);
+        array<Point, 4> PickFourRandomPoints(vector<Point>& points);
+        array<Point, 4> Snake();
     };
 
 
