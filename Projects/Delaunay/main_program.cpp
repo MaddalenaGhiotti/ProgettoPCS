@@ -8,35 +8,40 @@ int main()
 {
 
 //_______________________________________________________________________________________________________________________
-//DA FILE A ARRAY DI PUNTI
+//GENERALE
 
-    string inputFile = "test1.csv";
+    string inputFile = "Test2.csv";
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
-
+    delaunay.ExecuteDelaunay();
+//    delaunay.MeshToEdges(mesh.guideTriangles);
+//    //Stampa output e caricameno su file
+//    for (array<Point,2> side:delaunay.finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
+//    delaunay.OutputEdges();
+//    cout<<"Numero totale di lati: "<<delaunay.finalEdges.size()<<endl;
 
 //_______________________________________________________________________________________________________________________
 //CREAZIONE E STAMPA GRIGLIA
 
-    Grid grid = Grid(delaunay.pointsVector);
-    grid.Show();
+//    Grid grid = Grid(delaunay.pointsVector);
+//    //grid.Show();
 
 //_______________________________________________________________________________________________________________________
 //CHECK DELUNAY
-    Point a = Point(0, 2);
-    Point b = Point(4, 2);
-    Point c = Point(2, 1);
-    Point d = Point(2, 3);
-    Triangle Tri1 = Triangle(a, b, c);
-    Triangle Tri2 = Triangle(a, b, d);
-    if (CheckConvex(Tri1, Tri2) == 1)
-    {
-       cout << "True" << endl;
-    }
-    if (DelunayProperty(Tri1, Tri2) == 0)
-    {
-       cout << "da flippare" << endl;
-    }
+//    Point a = Point(0, 2);
+//    Point b = Point(4, 2);
+//    Point c = Point(2, 1);
+//    Point d = Point(2, 3);
+//    Triangle Tri1 = Triangle(a, b, c);
+//    Triangle Tri2 = Triangle(a, b, d);
+//    if (CheckConvex(Tri1, Tri2) == 1)
+//    {
+//       cout << "True" << endl;
+//    }
+//    if (DelunayProperty(Tri1, Tri2) == 0)
+//    {
+//       cout << "da flippare" << endl;
+//    }
 
 //_______________________________________________________________________________________________________________________
 //ESEMPIO MESH
@@ -59,18 +64,18 @@ int main()
 
     //Aggiunta triangoli
     Mesh mesh = Mesh(triangle0);
-    cout<<"Stampa riga di verifica"<<endl;
-    cout<<*(mesh.convexHull->hullPoint)<<endl;
+//    cout<<"Stampa riga di verifica"<<endl;
+//    cout<<*(mesh.convexHull->hullPoint)<<endl;
+
+    mesh.guideTriangles.push_back(&triangle1);
+    mesh.guideTriangles.push_back(&triangle2);
+    mesh.guideTriangles.push_back(&triangle3);
+    mesh.guideTriangles.push_back(&triangle4);
 
     mesh.meshTriangles.push_back(triangle1);
     mesh.meshTriangles.push_back(triangle2);
     mesh.meshTriangles.push_back(triangle3);
     mesh.meshTriangles.push_back(triangle4);
-
-    mesh.guideTriangles.push_back(triangle1);
-    mesh.guideTriangles.push_back(triangle2);
-    mesh.guideTriangles.push_back(triangle3);
-    mesh.guideTriangles.push_back(triangle4);
 
     //Elementi convex hull
     convexHullElem* elem0 = mesh.convexHull;
@@ -114,57 +119,104 @@ int main()
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO ESTERNO
 
-    Point externalPoint = Point(8,0);
+//    Point externalPoint = Point(0,4);
 
-    //Stampa punti convex hull
-    cout<<"\nELEMENTI CONVEX HULL INIZIALE"<<endl;
-    cout<<endl;
-    convexHullElem* currentElem1 = mesh.convexHull;
-    for (int i=0; i<7; i++)
-    {
-        cout<<*(currentElem1->hullPoint);
-        cout<<*(currentElem1->externalTriangle);
-        currentElem1 = currentElem1->next;
-    }
-    cout<<endl;
+//    //Stampa punti convex hull
+//    cout<<"\nELEMENTI CONVEX HULL INIZIALE"<<endl;
+//    cout<<endl;
+//    convexHullElem* currentElem1 = mesh.convexHull;
+//    for (int i=0; i<7; i++)
+//    {
+//        cout<<*(currentElem1->hullPoint);
+//        cout<<*(currentElem1->externalTriangle);
+//        currentElem1 = currentElem1->next;
+//    }
+//    cout<<endl;
 
-    //Aggiunta di punto esterno
-    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
-    mesh.AddExternalPoint(externalPoint);
+//    //Aggiunta di punto esterno
+//    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
+//    mesh.AddExternalPoint(externalPoint);
 
-    //Stampa punti convex hull
-    cout<<"\nELEMENTI NUOVO CONVEX HULL"<<endl;
-    cout<<endl;
-    convexHullElem* currentElem2 = mesh.convexHull;
-    for (int i=0; i<8; i++)
-    {
-        cout<<*(currentElem2->hullPoint);
-        cout<<*(currentElem2->externalTriangle);
-        currentElem2 = currentElem2->next;
-    }
-    cout<<endl;
+//    //Stampa punti convex hull
+//    cout<<"\nELEMENTI NUOVO CONVEX HULL"<<endl;
+//    cout<<endl;
+//    convexHullElem* currentElem2 = mesh.convexHull;
+//    for (int i=0; i<8; i++)
+//    {
+//        cout<<*(currentElem2->hullPoint);
+//        cout<<*(currentElem2->externalTriangle);
+//        currentElem2 = currentElem2->next;
+//    }
+//    cout<<endl;
 
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO INTERNO
 
-    Mesh meshInternal = Mesh(triangle0);
+//    Mesh meshInternal = Mesh(triangle0);
 
-    Point internalPoint1 = Point(5,3);
-    Point internalPoint2 = Point(5,4);
-    Point internalPoint3 = Point(6,3);
+//    Point internalPoint1 = Point(5,3);
+//    Point internalPoint2 = Point(5,4);
+//    Point internalPoint3 = Point(6,3);
 
-    //Aggiunta di punto interno
-    cout<<"Nuovi punti interni da aggiungere:\n"<<internalPoint1<<internalPoint2<<internalPoint3<<endl;
-    meshInternal.AddInternalPoint(internalPoint1, triangle0);
-    meshInternal.AddInternalPoint(internalPoint2, triangle0);
-    //meshInternal.AddInternalPoint(internalPoint3, triangle0);
+//    //Aggiunta di punto interno
+//    cout<<"Nuovi punti interni da aggiungere:\n"<<internalPoint1<<internalPoint2<<internalPoint3<<endl;
+//    meshInternal.AddInternalPoint(internalPoint1, triangle0);
+//    meshInternal.AddInternalPoint(internalPoint2, triangle0);
+//    meshInternal.AddInternalPoint(internalPoint3, triangle0);
 
-    for (Triangle tr:meshInternal.lastMesh){cout<<tr<<endl;}
+//    cout<<"TUTTI I TRIANGOLI GENERATI"<<endl;
+//    Triangle* lastTriangle;
+//    for (Triangle tr:meshInternal.lastMesh){lastTriangle = &tr; cout<<tr<<endl;}
+//    cout<<"Triangolo prova\n"<<*lastTriangle<<endl;
 
-    cout<<"Figli del grosso"<<endl;
-    for (Triangle* trPtr:triangle0.pointedTriangles){cout<<*trPtr<<endl;}
+//    cout<<"Triangoli adiacenti al triangolo prova"<<endl;
+//    for (Triangle* adTr:lastTriangle->adiacentTriangles){cout<<*adTr<<endl;}
 
-    cout<<"Indirizzo di memoria di triangle0   "<<&triangle0<<endl;
+//    cout<<"Figli del grosso"<<endl;
+//    for (Triangle* trPtr:triangle0.pointedTriangles){cout<<*trPtr<<endl;}
+
+//_______________________________________________________________________________________________________________________
+//ESTERNI PIU' INTERNI
+
+//    Point internalPoint1 = Point(5,5.5);
+//    Point externalPoint = Point(0,4);
+
+//    //Aggiunta di punto interno
+//    cout<<"Nuovo punto interno da aggiungere: "<<internalPoint1<<endl;
+//    mesh.AddInternalPoint(internalPoint1, triangle3);
+
+//    //Aggiunta di punto esterno
+//    cout<<"Nuovo punto esterno da aggiungere: "<<externalPoint<<endl;
+//    mesh.AddExternalPoint(externalPoint);
+
+//    cout<<"TUTTI I TRIANGOLI GENERATI"<<endl;
+//    Triangle* lastTriangle;
+//    for (Triangle tr:mesh.meshTriangles){cout<<tr<<endl;}
+
+//    cout<<"Triangolo di verifica:\n"<<mesh.meshTriangles[8];
+
+//    cout<<"Triangolo adiacente"<<endl;
+//    cout<<*(mesh.meshTriangles[8].adiacentTriangles[1])<<endl;
+
+//    cout<<"Triangoli in array"<<endl;
+//    for (Triangle tr:trArray){cout<<tr<<endl;}
+
+
+//_______________________________________________________________________________________________________________________
+//ALTRO
+
+    //Prova punto interno o esterno
+//    Point point = Point(6,6);
+//    cout<<mesh.CheckInside(point);
+    //Aggiunta punto interno
+//    Point internalPoint = Point(5,5.5);
+//    mesh.AddInternalPoint(internalPoint, triangle3);
+
+//    //OUTPUT
+//    delaunay.MeshToEdges(mesh.guideTriangles);
+//    for (array<Point,2> side:delaunay.finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
+//    delaunay.OutputEdges();
+//    cout<<"Numero totale di lati: "<<delaunay.finalEdges.size()<<endl;
 
 //_______________________________________________________________________________________________________________________
 //CHIUSURA FUNZIONE
