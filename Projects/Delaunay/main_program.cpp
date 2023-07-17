@@ -8,35 +8,40 @@ int main()
 {
 
 //_______________________________________________________________________________________________________________________
-//DA FILE A ARRAY DI PUNTI
+//GENERALE
 
-    string inputFile = "test1.csv";
+    string inputFile = "Test2.csv";
     Delaunay delaunay = Delaunay(inputFile);
-    //delaunay.Show();
-
+    delaunay.Show();
+    delaunay.ExecuteDelaunay();
+//    delaunay.MeshToEdges(mesh.guideTriangles);
+//    //Stampa output e caricameno su file
+//    for (array<Point,2> side:delaunay.finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
+//    delaunay.OutputEdges();
+//    cout<<"Numero totale di lati: "<<delaunay.finalEdges.size()<<endl;
 
 //_______________________________________________________________________________________________________________________
 //CREAZIONE E STAMPA GRIGLIA
 
-    Grid grid = Grid(delaunay.pointsVector);
-    //grid.Show();
+//    Grid grid = Grid(delaunay.pointsVector);
+//    //grid.Show();
 
 //_______________________________________________________________________________________________________________________
 //CHECK DELUNAY
-    Point a = Point(0, 2);
-    Point b = Point(4, 2);
-    Point c = Point(2, 1);
-    Point d = Point(2, 3);
-    Triangle Tri1 = Triangle(a, b, c);
-    Triangle Tri2 = Triangle(a, b, d);
-    if (CheckConvex(Tri1, Tri2) == 1)
-    {
-       cout << "True" << endl;
-    }
-    if (DelunayProperty(Tri1, Tri2) == 0)
-    {
-       cout << "da flippare" << endl;
-    }
+//    Point a = Point(0, 2);
+//    Point b = Point(4, 2);
+//    Point c = Point(2, 1);
+//    Point d = Point(2, 3);
+//    Triangle Tri1 = Triangle(a, b, c);
+//    Triangle Tri2 = Triangle(a, b, d);
+//    if (CheckConvex(Tri1, Tri2) == 1)
+//    {
+//       cout << "True" << endl;
+//    }
+//    if (DelunayProperty(Tri1, Tri2) == 0)
+//    {
+//       cout << "da flippare" << endl;
+//    }
 
 //_______________________________________________________________________________________________________________________
 //ESEMPIO MESH
@@ -198,18 +203,20 @@ int main()
 
 
 //_______________________________________________________________________________________________________________________
-//ESTERNI PIU' INTERNI
+//ALTRO
 
+    //Prova punto interno o esterno
+//    Point point = Point(6,6);
+//    cout<<mesh.CheckInside(point);
     //Aggiunta punto interno
-    Point internalPoint = Point(5,5.5);
-    mesh.AddInternalPoint(internalPoint, triangle3);
+//    Point internalPoint = Point(5,5.5);
+//    mesh.AddInternalPoint(internalPoint, triangle3);
 
-    //OUTPUT
-    delaunay.MeshToEdges(mesh.guideTriangles);
-    for (array<Point,2> side:delaunay.finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
-    delaunay.OutputEdges();
-
-    cout<<"Numero totale di lati: "<<delaunay.finalEdges.size()<<endl;
+//    //OUTPUT
+//    delaunay.MeshToEdges(mesh.guideTriangles);
+//    for (array<Point,2> side:delaunay.finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
+//    delaunay.OutputEdges();
+//    cout<<"Numero totale di lati: "<<delaunay.finalEdges.size()<<endl;
 
 //_______________________________________________________________________________________________________________________
 //CHIUSURA FUNZIONE

@@ -67,7 +67,8 @@ namespace DelaunayLibrary
     {
     public:
         string fileName;
-        vector<Point> pointsVector;
+        vector<Point*> pointsVector;
+        //Point* pointsArray = &pointsVector[0];
         vector<array<Point,2>> finalEdges;
     public:
         Delaunay() = default;
@@ -146,9 +147,10 @@ namespace DelaunayLibrary
         void Flip(Triangle& Triangle1, Triangle& Triangle2);
         void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
         void AddExternalPoint(Point& point);
-        void AddInternalPoint(Point& point, Triangle& rootTriangle);
+        void AddInternalPoint(Point& point, Triangle* rootTriangle);
         void AddSidePoint(Point& point, Triangle& bigTriangle, int side);
         void SetConvexHull(convexHullElem* elem) {convexHull=elem;}
+        int CheckInside(Point point);
     };
 }
 
