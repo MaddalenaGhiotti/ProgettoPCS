@@ -44,6 +44,43 @@ namespace DelaunayLibrary
 
 //      }
 //    }
+    array<Point,2> Point::OrederSide(Point& point1, Point& point2)
+    {
+        if (point1<point2){return {point1,point2};}
+        else {return {point2,point1};}
+    }
+
+    void Delaunay::MeshToEdges(vector<Triangle*> trPtrVec)
+    {
+        for (Triangle* tr:trPtrVec)
+        {
+            if (tr->pointedTriangles.empty())
+            {
+                array<Point,2> side1 = Point::OrederSide(tr->vertices[0], tr->vertices[1]);
+                array<Point,2> side2 = Point::OrederSide(tr->vertices[1], tr->vertices[2]);
+                array<Point,2> side3 = Point::OrederSide(tr->vertices[2], tr->vertices[0]);
+                //Aggiungere lati al vector finale
+                finalEdges.push_back(side1);
+                finalEdges.push_back(side2);
+                finalEdges.push_back(side3);
+                sort(finalEdges.begin(), finalEdges.end());
+                finalEdges.erase(unique(finalEdges.begin(), finalEdges.end()), finalEdges.end());
+            }
+            else {MeshToEdges(tr->pointedTriangles);}
+        }
+    }
+
+    void Delaunay::OutputEdges()
+    {
+        fileName = "outputEdges";
+        ofstream file;
+        file.open(fileName);
+        if (file.fail()){
+            cerr << "Error while opening file" << endl;
+        }
+        for (array<Point,2> side:finalEdges) {file<<"Segmento(("<<side[0].x<<", "<<side[0].y<<"), ("<<side[1].x<<", "<<side[1].y<<"))"<<endl;}
+    }
+
 
     Triangle::Triangle(Point& p1, Point& p2, Point& p3)
     {
@@ -72,17 +109,152 @@ namespace DelaunayLibrary
         return 3; //Per esclusione il punto si trova sul terzo lato
     }
 
-    void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle* addingTriangle, Point& tail, Point& head) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
+
+    // Dato un triangolo e due punti appartenenti a quel triangolo, stabilisce l'ordine in cui compaiono i punti all'interno del
+    // triangolo (dunque in senso antiorario). Serve per far funzionare SetAdiacentTriangles così come è stato definito, senza
+    // dover dare in pasto il vettore già ordinato nel verso giusto
+    array<Point*, 2> Triangle::findOrderedEdge(Triangle* triangle1, Point* Punto1, Point* Punto2)
     {
+        array<Point*, 2> Tail_head;
+        for (int i = 0; i<3; i++)
+        {
+           if (triangle1->vertices[i] == *Punto1)
+           {
+               if (triangle1->vertices[(i+1)%3] == *Punto2)
+               {
+                   Tail_head[1] = Punto2;
+                   Tail_head[0] = Punto1;
+                   return Tail_head;
+               }
+               else
+               {
+                   Tail_head[1] = Punto1;
+                   Tail_head[0] = Punto2;
+                   return Tail_head;
+               }
+           }
+        }
+    }
+
+    // dati due triangoli e due punti che sono ad essi comuni (in un ordine non necessariamente specificato), aggiorna l'array di
+    // adiacenze in senso ordinato
+    void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle* addingTriangle, Point* Punto1, Point* Punto2) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
+    {
+        array<Point*, 2> tail_head = findOrderedEdge(&existingTriangle, Punto1, Punto2);
+        Point* tail_P = tail_head[0];
+        Point* head_P = tail_head[1];
         //Settare triangolo adiacente a triangolo già esistente
-        if (existingTriangle.vertices[0] == tail){existingTriangle.adiacentTriangles[0] = addingTriangle;}
-        else if (existingTriangle.vertices[1] == tail){existingTriangle.adiacentTriangles[1] = addingTriangle;}
-        else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
+        if (tail_P != nullptr)
+        {        if (existingTriangle.vertices[0] == *tail_P){existingTriangle.adiacentTriangles[0] = addingTriangle;}
+            else if (existingTriangle.vertices[1] == *tail_P){existingTriangle.adiacentTriangles[1] = addingTriangle;}
+            else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
+        }
         //Settare triangolo adiacente a triangolo aggiunto
         if (addingTriangle!=nullptr){
-            if (addingTriangle->vertices[0] == head){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
-            else if (addingTriangle->vertices[1] == head){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
+            if (addingTriangle->vertices[0] == *head_P){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
+            else if (addingTriangle->vertices[1] == *head_P){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
             else {addingTriangle->adiacentTriangles[2] = &existingTriangle;}}
+        }
+
+    // dati due triangoli, restituisce un vettore output che presenta al proprio interno, in ordine:
+    //-i primi due punti del lato in comune ai due triangoli;
+    //-i due punti non comuni dei triangoli;
+    // se i due triangoli non presentano punti in comune, restituisce semplicemente un array di nullptr
+    array<Point*,4> Triangle::FindCommonEdge(Triangle& triangle1, Triangle& triangle2)
+    {
+        array<Point*, 4> Output = {nullptr, nullptr, nullptr, nullptr};
+        int i = 0;
+        int sign = 0;
+        Point* esterno1;
+        Point* esterno2;
+        array<Point*,2> Lato = {nullptr, nullptr};
+        for (auto& punto1 : triangle1.vertices)
+        {
+           for (auto& punto2 : triangle2.vertices)
+           {
+                if (punto1 == punto2)
+                {
+                    Lato[i] = &punto1;
+                    i += 1;
+                    sign = 1;
+                }
+           }
+           if (sign == 0)
+           {
+                esterno1 = &punto1;
+           }
+           sign = 0;
+        }
+        if ((Lato[0] == nullptr) or (Lato[1] == nullptr))
+        {
+           return Output;
+        }
+        for (auto& punto : triangle2.vertices)
+        {
+            if ((punto == *Lato[0]) or (punto == *Lato[1]))
+            {
+                // do nothing
+            }
+            else
+            {
+                esterno2 = &punto;
+            }
+        }
+
+        Output[0] = Lato[0];
+        Output[1] = Lato[1];
+        Output[2] = esterno1;
+        Output[3] = esterno2;
+
+        return Output;
+    }
+
+    // aggiorna le adiacenze del nuovo triangolo formatosi in seguito al flip grazie alle liste di adiacenza dei due vecchi
+    // triangoli Triangle1 e Triangle2
+    void Triangle::adjourn(Triangle* Triangle_new_1, Triangle* Triangle1, Triangle* Triangle2)
+    {
+//        cout << "Triangolo nuovo" << endl;
+//        cout << *Triangle_new_1 << endl;
+//        cout << "triangolo vecchio" << endl;
+//        cout << *Triangle1 << endl;
+        if (Triangle1->adiacentTriangles[0] == nullptr)
+        {
+           if (Triangle1->adiacentTriangles[1] == nullptr)
+           {
+               if (Triangle1->adiacentTriangles[2] == nullptr)
+               {
+                   return;
+               }
+           }
+        }
+        for (Triangle* triangolo : Triangle1->adiacentTriangles)
+        {
+           if ((triangolo == nullptr) or (*triangolo == *Triangle2))
+           {
+               continue;
+           }
+           array<Point*, 4> Output = Triangle::FindCommonEdge(*Triangle_new_1, *triangolo);
+           for (int i=0; i<2; i++)
+           {
+               // cout << "Punti dei lati in comune" << endl;
+               // cout << *Output[i] << endl;
+           }
+
+           bool isEmpty = false;
+               for (const auto& element : Output)
+               {
+                   // cout << element << endl;
+                   if (element == nullptr)
+                   {
+                       // cout << "whaat" << endl;
+                       isEmpty = true;
+                   }
+               }
+            if (isEmpty == false)
+            {
+                Triangle::SetAdiacentTriangle(*Triangle_new_1, triangolo, Output[2], Output[3]);
+            }
+        }
     }
 
     Delaunay::Delaunay(const string& inputFileName)
@@ -153,6 +325,7 @@ namespace DelaunayLibrary
 //______________________________________________________________________________________________
 
 
+    // verifica la proprietà di Delaunay con il metodo del determinante
     bool DelunayProperty(Triangle& Triangle1, Triangle& Triangle2)
     {
         Point A = Triangle1.vertices[0];
@@ -197,157 +370,179 @@ namespace DelaunayLibrary
         }
     }
 
-    bool CheckConvex(Triangle& Triangle1, Triangle& Triangle2)
+//    bool CheckConvex(Triangle& Triangle1, Triangle& Triangle2)
+//    {
+//        int i = 0;
+//        int sign = 0;
+//        Point* esterno1;
+//        Point* esterno2;
+//        array<Point*,2> Lato[2];
+//        for (auto& punto1 : Triangle1.vertices)
+//        {
+//           for (auto& punto2 : Triangle2.vertices)
+//           {
+//            if (punto1 == punto2)
+//            {
+//              Lato[i] = punto1;
+//              i += 1;
+//              sign = 1;
+//            }
+//           }
+//           if (sign == 0)
+//           {
+//            esterno1 = punto1;
+//           }
+//        }
+//        for (auto& punto : Triangle2.vertices)
+//        {
+//            if ((punto.x == Lato[0].x and punto.y == Lato[0].y) or (punto.x == Lato[1].x and punto.y == Lato[1].y))
+//            {
+//                // do nothing
+//            }
+//            else
+//            {
+//                esterno2 = punto;
+//                // cout << esterno2.x << endl;
+//            }
+//        }
+//        Point Quadril[4];
+//        Quadril[0] = esterno1;
+//        Quadril[1] = Lato[0];
+//        //cout << Lato[0].x << Lato[0].y << endl;
+//        //cout << Lato[1].x << Lato[1].y << endl;
+//        Quadril[2] = esterno2;
+//        Quadril[3] = Lato[1];
+//        bool segno[4];
+//        for (int i = 0; i < 4; i++)
+//        {
+//            // double a = ((Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x));
+//            if (( Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x) > 0)
+//            {
+//                segno [i] = 1;
+//            }
+//            else
+//            {
+//                segno[i] = 0;
+//            }
+//            //cout << a << endl;
+//        }
+//        for (int i = 0; i < 4; i++)
+//        {
+//            //cout << segno[i] << endl;
+//            //cout << Quadril[i].x << Quadril[i].y << endl;
+//        }
+
+//        if ((segno[0] == segno[1]) and (segno[1] == segno[2]) and (segno[2] == segno [3]))
+//        {
+//            return 1;
+//        }
+//        else
+//        {
+//            return 0;
+//        }
+//    }
+
+    // Operazione di flip vera e propria, considero due triangoli con un lato adiacente, lo trovo, costruisco due nuovi triangoli
+    // a partire da quelli già esistenti e aggiorno tutte le liste di adiacenza, oltre che l'array pointedTriangles per ciascuno
+    // dei due triangoli a partire dai quali si è originato il flip;
+    array<Triangle*, 2> Triangle::Flip(Triangle& Triangle1, Triangle& Triangle2)
     {
-        int i = 0;
-        int sign = 0;
+
         Point esterno1;
         Point esterno2;
         Point Lato[2];
-        for (auto& punto1 : Triangle1.vertices)
-        {
-           for (auto& punto2 : Triangle2.vertices)
-           {
-            if (punto1.x == punto2.x and punto1.y == punto2.y)
-            {
-              Lato[i] = punto1;
-              i += 1;
-              sign = 1;
-            }
-           }
-           if (sign == 0)
-           {
-            esterno1 = punto1;
-           }
-        }
-        for (auto& punto : Triangle2.vertices)
-        {
-            if ((punto.x == Lato[0].x and punto.y == Lato[0].y) or (punto.x == Lato[1].x and punto.y == Lato[1].y))
-            {
-                // do nothing
-            }
-            else
-            {
-                esterno2 = punto;
-                // cout << esterno2.x << endl;
-            }
-        }
-        Point Quadril[4];
-        Quadril[0] = esterno1;
-        Quadril[1] = Lato[0];
-        //cout << Lato[0].x << Lato[0].y << endl;
-        //cout << Lato[1].x << Lato[1].y << endl;
-        Quadril[2] = esterno2;
-        Quadril[3] = Lato[1];
-        bool segno[4];
-        for (int i = 0; i < 4; i++)
-        {
-            // double a = ((Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x));
-            if (( Quadril[(i+1)%4].x - Quadril[i].x) * (Quadril[(i+2)%4].y - Quadril[(i+1)%4].y) - (Quadril[(i+1)%4].y - Quadril[i].y) * (Quadril[(i+2)%4].x - Quadril[(i+1)%4].x) > 0)
-            {
-                segno [i] = 1;
-            }
-            else
-            {
-                segno[i] = 0;
-            }
-            //cout << a << endl;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            //cout << segno[i] << endl;
-            //cout << Quadril[i].x << Quadril[i].y << endl;
-        }
+        array<Point*, 4> Output = Triangle::FindCommonEdge(Triangle1, Triangle2);
+        // cout<<"swag"<<endl;
+        esterno1 = *Output[2];
+        esterno2 = *Output[3];
+        Lato[0] = *Output[0];
+        Lato[1] = *Output[1];
 
-        if ((segno[0] == segno[1]) and (segno[1] == segno[2]) and (segno[2] == segno [3]))
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        Triangle* Triangle_new_1 = new Triangle(esterno1, esterno2, Lato[0]);
+        Triangle* Triangle_new_2 = new Triangle(esterno1, esterno2, Lato[1]);
+
+        Triangle::SetAdiacentTriangle(*Triangle_new_2, Triangle_new_1, &esterno1, &esterno2);
+        //Triangle::SetAdiacentTriangle(*Triangle_new_1, Triangle_new_2, &esterno1, &esterno2);
+        // cout<<"swag"<<endl;
+
+        Triangle::adjourn(Triangle_new_1, &Triangle1, &Triangle2);
+        //cout << "ok" << endl;
+        Triangle::adjourn(Triangle_new_2, &Triangle2, &Triangle1);
+        //cout << "ok2" << endl;
+
+        Triangle1.pointedTriangles.push_back(Triangle_new_1);
+        Triangle1.pointedTriangles.push_back(Triangle_new_2);
+//        cout << "metto i due triangoli in Triangolo 1" << endl;
+//        cout << "Il triangolo che dovrebbe essere aggiornato" << endl;
+//        cout << Triangle1 << endl;
+//        cout << "Non dovrebbe essere vuoto" << endl;
+//        cout << Triangle1.pointedTriangles[0] << endl;
+        Triangle2.pointedTriangles.push_back(Triangle_new_1);
+        Triangle2.pointedTriangles.push_back(Triangle_new_2);
+//        cout << "metto i due triangoli in Triangolo 2" << endl;
+//        cout << "Il triangolo che dovrebbe essere aggiornato" << endl;
+//        cout << Triangle2 << endl;
+//        cout << "Non dovrebbe essere vuoto" << endl;
+//        cout << Triangle2.pointedTriangles[0] << endl;
+        array<Triangle*, 2> Tri_prop;
+        Tri_prop[0] = Triangle_new_1;
+        Tri_prop[1] = Triangle_new_2;
+        return Tri_prop;
     }
 
-    void Mesh::Flip(Triangle& Triangle1, Triangle& Triangle2)
-    {
-        int i = 0;
-        int sign = 0;
-        Point esterno1;
-        Point esterno2;
-        Point Lato[2];
-        for (auto& punto1 : Triangle1.vertices)
-        {
-           for (auto& punto2 : Triangle2.vertices)
-           {
-            if (punto1.x == punto2.x and punto1.y == punto2.y)
-            {
-              Lato[i] = punto1;
-              i += 1;
-              sign = 1;
-            }
-           }
-           if (sign == 0)
-           {
-            esterno1 = punto1;
-           }
-        }
-        for (auto& punto : Triangle2.vertices)
-        {
-            if ((punto.x == Lato[0].x and punto.y == Lato[0].y) or (punto.x == Lato[1].x and punto.y == Lato[1].y))
-            {
-                // do nothing
-            }
-            else
-            {
-                esterno2 = punto;
-                // cout << esterno2.x << endl;
-            }
-        }
-        Point Quadril[4];
-        Quadril[0] = esterno1;
-        Quadril[1] = Lato[0];
-        //cout << Lato[0].x << Lato[0].y << endl;
-        //cout << Lato[1].x << Lato[1].y << endl;
-        Quadril[2] = esterno2;
-        Quadril[3] = Lato[1];
-        //Triangle TrNew1 = Triangle(esterno1, Lato[0], esterno2);
-//        TrNew1.adiacentTriangles[0] = meshTriangles.size();
-//        operationEdges(TrNew1);
-//        Triangle TrNew2 = Triangle(esterno1, Lato[1], esterno2);
-//        TrNew1.adiacentTriangles[0] = meshTriangles.size() + 1 ;
-//        operationEdges(TrNew1);
-//        meshTriangles.push_back(TrNew1);
-//        meshTriangles.push_back(TrNew1);
-//        Triangle1.PointedTriangles.push_back(TrNew1);
-//        Triangle1.PointedTriangles.push_back(TrNew2);
-//        Triangle2.PointedTriangles.push_back(TrNew1);
-//        Triangle2.PointedTriangles.push_back(TrNew2);
-    }
-
-    void Mesh::DelunayPropagation(Triangle& StartTriangle)
+    // propagazuine dell'algoritmo di Delunay a partire da un triangolo. Abbiamo già verificato che l'input sia papabile, ossia che
+    // non punti a nulla (siamo dunque nella mesh "più aggiornata" per intenderci). Parto dal presupposto che i triangoli adiacenti
+    // facciano tutti parte della mesh più aggiornata (da verificare se in adjourn l'operazione porta effettivamente a una situazione
+    // di questo tipo, in cui l'adiacenza a quello da flippare viene sostituita con l'adiacenza a quello flippato;
+    void Mesh::DelunayPropagation(Triangle* StartTriangle)
     {
        for (int i = 0; i < 3; i++)
        {
-//            Triangle TriangoloAdj = meshTriangles[StartTriangle.adiacentTriangles[i]];
-//            if (CheckConvex(StartTriangle, TriangoloAdj) == 0)
-//            {
-//                if (DelunayProperty(StartTriangle, TriangoloAdj) == 0 or (DelunayProperty(StartTriangle, TriangoloAdj) == 0) )
-//                {
-//                    Flip(StartTriangle, TriangoloAdj);
-//                }
-//            }
-
-       }
+           Triangle* TriangoloAdj =StartTriangle->adiacentTriangles[i];
+           //cout << "inizia un ciclo di Delaunay propagation" << endl;
+           //cout << "Triangolo iniziale" << endl;
+           //cout << *StartTriangle << endl;
+           if (TriangoloAdj == nullptr)
+              {
+               // cout << "Il puntatore è nullo" << endl;
+               continue;
+              }
+           // cout << "Triangolo adiacente" << endl;
+           if (DelunayProperty(*StartTriangle, *TriangoloAdj) == 0)
+              {
+                // cout << "C'è da flippare" << endl;
+//                cout << StartTriangle << endl;
+//                cout << *TriangoloAdj << endl;
+                array<Triangle*, 2> Tri_prop = Triangle::Flip(*StartTriangle, *TriangoloAdj);
+                // cout << "ok" << endl;
+//                cout << "BELLO" << endl;
+//                cout << TriangoloAdj->pointedTriangles[0] << endl;
+                Triangle* Triangolo_flip_1  = Tri_prop[0];
+//                cout << "nuovo triangolo flippato 1" << endl;
+//                cout << *Triangolo_flip_1 << endl;
+                Triangle* Triangolo_flip_2  = Tri_prop[1];
+//                cout << "nuovo triangolo flippato 2" << endl;
+//                cout << *Triangolo_flip_2 << endl;
+                Mesh::DelunayPropagation(Triangolo_flip_1);
+                if (Triangolo_flip_2->pointedTriangles.empty())
+                {
+                    //cout<<"ciao";
+                    Mesh::DelunayPropagation(Triangolo_flip_2);
+                }
+              }
+        }
     }
 
-    void Mesh::Delunay(vector<Triangle>& new_triangles)
+    // inizializzo l'operazione di flip secondo l'algoritmo di Delunay dati i nuovi triangoli presenti nel vettore
+    // new_triangles
+    void Mesh::Delunay(vector<Triangle*> new_triangles)
     {
         for (auto& element : new_triangles)
         {
-            meshTriangles.push_back(element);
-            lastMesh.push_back(element);
-            DelunayPropagation(element);
+            //cout<<"ok"<<endl;
+            // meshTriangles.push_back(element);
+            // lastMesh.push_back(element);
+            if (element->pointedTriangles.empty()){DelunayPropagation(element);}
         }
     }
 
@@ -356,7 +551,7 @@ namespace DelaunayLibrary
     Mesh::Mesh (Triangle& triangle)
     {
         meshTriangles.push_back(triangle);
-        guideTriangles.push_back(triangle);
+        guideTriangles.push_back(&triangle);
         //Creazione dei tre oggetti Convex Hull
         convexHull = new convexHullElem(triangle.vertices[0], triangle);
         //convexHullElem* firstElem = new convexHullElem(triangle.vertices[0], triangle);
@@ -410,8 +605,8 @@ namespace DelaunayLibrary
             Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
             newTriangles.push_back(newGuideTriangle);
             //meshTriangles.push_back(newGuideTriangle);
-            guideTriangles.push_back(*newGuideTriangle);
-            Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+            guideTriangles.push_back(newGuideTriangle);
+            Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, tail, head);
             cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
             cout<<endl;
 
@@ -444,8 +639,8 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-                guideTriangles.push_back(*newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                guideTriangles.push_back(newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, tail, head);
                 cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
@@ -489,8 +684,8 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-                guideTriangles.push_back(*newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                guideTriangles.push_back(newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, tail, head);
                 cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
@@ -537,8 +732,8 @@ namespace DelaunayLibrary
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
-                guideTriangles.push_back(*newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                guideTriangles.push_back(newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, tail, head);
                 cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
                 cout<<endl;
 
@@ -601,12 +796,12 @@ namespace DelaunayLibrary
             //for (Triangle* trPtr:bigTrianglePtr->pointedTriangles){cout<<*trPtr<<endl;}
             //cout<<"Fine stampa dentro metodo"<<endl;
             //Aggiornamento adiacenze
-            Triangle::SetAdiacentTriangle(*triangle1, bigTrianglePtr->adiacentTriangles[0], (bigTrianglePtr->vertices[0]), (bigTrianglePtr->vertices[1]));
-            Triangle::SetAdiacentTriangle(*triangle2, bigTrianglePtr->adiacentTriangles[1], bigTrianglePtr->vertices[1], bigTrianglePtr->vertices[2]);
-            Triangle::SetAdiacentTriangle(*triangle3, bigTrianglePtr->adiacentTriangles[2], bigTrianglePtr->vertices[2], bigTrianglePtr->vertices[0]);
-            Triangle::SetAdiacentTriangle(*triangle1, triangle2, bigTrianglePtr->vertices[1], point);
-            Triangle::SetAdiacentTriangle(*triangle2, triangle3, bigTrianglePtr->vertices[2], point);
-            Triangle::SetAdiacentTriangle(*triangle3, triangle1, bigTrianglePtr->vertices[0], point);
+            Triangle::SetAdiacentTriangle(*triangle1, bigTrianglePtr->adiacentTriangles[0], &(bigTrianglePtr->vertices[0]), &(bigTrianglePtr->vertices[1]));
+            Triangle::SetAdiacentTriangle(*triangle2, bigTrianglePtr->adiacentTriangles[1], &(bigTrianglePtr->vertices[1]), &(bigTrianglePtr->vertices[2]));
+            Triangle::SetAdiacentTriangle(*triangle3, bigTrianglePtr->adiacentTriangles[2], &(bigTrianglePtr->vertices[2]), &(bigTrianglePtr->vertices[0]));
+            Triangle::SetAdiacentTriangle(*triangle1, triangle2, &(bigTrianglePtr->vertices[1]), &point);
+            Triangle::SetAdiacentTriangle(*triangle2, triangle3, &(bigTrianglePtr->vertices[2]), &point);
+            Triangle::SetAdiacentTriangle(*triangle3, triangle1, &(bigTrianglePtr->vertices[0]), &point);
             //Aggiunta triangoli a leaf mesh (?)
             lastMesh.push_back(*triangle1);
             lastMesh.push_back(*triangle2);
@@ -642,15 +837,15 @@ namespace DelaunayLibrary
             adiacentTrPtr->pointedTriangles.push_back(&triangle3);
             adiacentTrPtr->pointedTriangles.push_back(&triangle4);
             //Aggiornamento adiacenze
-            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
-            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
-            Triangle::SetAdiacentTriangle(triangle3, adiacentTrPtr->adiacentTriangles[(commonSidePos+1)%3], bigTriangle.vertices[side-1], *oppositPointPtr);
-            Triangle::SetAdiacentTriangle(triangle4, adiacentTrPtr->adiacentTriangles[(commonSidePos+2)%3], *oppositPointPtr, bigTriangle.vertices[side%3]);
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], &(bigTriangle.vertices[(side+1)%3]), &(bigTriangle.vertices[side-1]));
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], &(bigTriangle.vertices[side%3]), &(bigTriangle.vertices[(side+1)%3]));
+            Triangle::SetAdiacentTriangle(triangle3, adiacentTrPtr->adiacentTriangles[(commonSidePos+1)%3], &(bigTriangle.vertices[side-1]), oppositPointPtr);
+            Triangle::SetAdiacentTriangle(triangle4, adiacentTrPtr->adiacentTriangles[(commonSidePos+2)%3], oppositPointPtr, &(bigTriangle.vertices[side%3]));
 
-            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
-            Triangle::SetAdiacentTriangle(triangle3, &triangle4, *oppositPointPtr, point);
-            Triangle::SetAdiacentTriangle(triangle1, &triangle3, bigTriangle.vertices[side-1], point);
-            Triangle::SetAdiacentTriangle(triangle2, &triangle4, point, bigTriangle.vertices[side%3]);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, &point, &(bigTriangle.vertices[(side+1)%3]));
+            Triangle::SetAdiacentTriangle(triangle3, &triangle4, oppositPointPtr, &point);
+            Triangle::SetAdiacentTriangle(triangle1, &triangle3, &(bigTriangle.vertices[side-1]), &point);
+            Triangle::SetAdiacentTriangle(triangle2, &triangle4, &point, &(bigTriangle.vertices[side%3]));
             //Aggiunta triangoli a leaf mesh (?)
             lastMesh.push_back(triangle1);
             lastMesh.push_back(triangle2);
@@ -670,9 +865,9 @@ namespace DelaunayLibrary
             bigTriangle.pointedTriangles.push_back(&triangle1);
             bigTriangle.pointedTriangles.push_back(&triangle2);
             //Aggiornamento adiacenze
-            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], bigTriangle.vertices[(side+1)%3], bigTriangle.vertices[side-1]);
-            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], bigTriangle.vertices[side%3], bigTriangle.vertices[(side+1)%3]);
-            Triangle::SetAdiacentTriangle(triangle1, &triangle2, point, bigTriangle.vertices[(side+1)%3]);
+            Triangle::SetAdiacentTriangle(triangle1, bigTriangle.adiacentTriangles[(side+1)%3], &(bigTriangle.vertices[(side+1)%3]), &(bigTriangle.vertices[side-1]));
+            Triangle::SetAdiacentTriangle(triangle2, bigTriangle.adiacentTriangles[side%3], &(bigTriangle.vertices[side%3]), &(bigTriangle.vertices[(side+1)%3]));
+            Triangle::SetAdiacentTriangle(triangle1, &triangle2, &point, &(bigTriangle.vertices[(side+1)%3]));
             //Aggiornamento convexHull
 
             //Aggiunta triangoli a leaf mesh (?)
@@ -736,155 +931,155 @@ namespace DelaunayLibrary
         cout<<endl;
     }
   //-----------------------------------------------------------------------------------------------------------------
-    //ALDO
-    void Grid::pointsInRectangle(vector<Point> &points)
-    {
-        for (Point pt : points){
-            int col = fmod((pt.x - x_min), intervalX);
-            int row = fmod((pt.y - y_min), intervalY);
-            rectangles(row, col).containedPoints.push_back(pt);
-        }
-    }
+//    //ALDO
+//    void Grid::pointsInRectangle(vector<Point> &points)
+//    {
+//        for (Point pt : points){
+//            int col = fmod((pt.x - x_min), intervalX);
+//            int row = fmod((pt.y - y_min), intervalY);
+//            rectangles(row, col).containedPoints.push_back(pt);
+//        }
+//    }
 
 
-    array<Point, 4> Grid::PickFourRandomPoints(vector<Point>& points){
-       array<Point, 4> result;
-       vector<Point> shuffledPoints = points;
-       random_shuffle(shuffledPoints.begin(), shuffledPoints.end());
-       for (int i = 0; i < 4; ++i) {
-            result[i] = shuffledPoints[i];
-       }
-
-       return result;
-    }
-
-
-    array<Point, 4> Grid::Snake()
-    {
-       array<Point, 4> fourPoints;
-       array<Rectangle, 3> chosenRectangles;
-
-       string flag = "well";
-
-       // primo punto (in alto a sx)
-
-//       int i, j = 0;
-//       for (int sum = 0; sum < intNum; sum++){
-//            i = sum;
-//            if (!(rectangles(i, j).containedPoints).empty()){
-//                chosenRectangles[0] = rectangles(i, j);
-//                fourPoints[0] = rectangles(i, j).containedPoints[0];
-//            }
-//            while (i > 0){
-//                i = i - 1;
-//                j = j + 1;
-//                if (!(rectangles(i, j).containedPoints).empty()){
-//                    chosenRectangles[0] = rectangles(i, j);
-//                    fourPoints[0] = rectangles(i, j).containedPoints[0];
-//                }
-//            }
-//            j = 0;
+//    array<Point, 4> Grid::PickFourRandomPoints(vector<Point>& points){
+//       array<Point, 4> result;
+//       vector<Point> shuffledPoints = points;
+//       random_shuffle(shuffledPoints.begin(), shuffledPoints.end());
+//       for (int i = 0; i < 4; ++i) {
+//            result[i] = shuffledPoints[i];
 //       }
 
-       for (int sum = 0; sum < intNum; sum++)
-       {
-
-   int i = sum;
-           for (int j = 0; j <= sum; j++)
-           {
-               if (!(rectangles(i, j).containedPoints).empty())
-               {
-                chosenRectangles[0] = rectangles(i, j);
-                fourPoints[0] = rectangles(i, j).containedPoints[0];
-               }
-           }
-           if (i > 0)
-           {
-               i--;
-           }
-       }
+//       return result;
+//    }
 
 
-       // secondo punto (in basso a sx)
-       for (int i = intNum - 1; i >= 0; i--)
-       {
-            int k = i;
-            for (int j = 0; j <= (intNum - 1 - k); j++)
-            {
-                if (!(rectangles(i, j).containedPoints).empty())
-                {
-                 if ()
-                 chosenRectangles[0] = rectangles(i, j);
-                 fourPoints[0] = rectangles(i, j).containedPoints[0];
-                }
-                else
-                {
-                 cerr << "Rectangle already found by a previous zig-zagging." << endl;
-                 flag = "bad";
-                }
+//    array<Point, 4> Grid::Snake()
+//    {
+//       array<Point, 4> fourPoints;
+//       array<Rectangle, 3> chosenRectangles;
 
-                if (i < intNum - 1)
-                {
-                    i++;
-                }
-            }
-            k = 0;
-       }
+//       string flag = "well";
 
-       // terzo punto (in alto a dx)
-       if (flag != "bad"){
-            for (int i = 0; i < m; i++){
-                for (int j = m; j >= m - i; j--){
-                    Rectangle rectangle = rectangles(i, j);
-                    vector<Point> points = rectangles.containedPoints();
-                    if (!points.empty()){
-                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1]){
-                            chosenRectangles[2] = rectangle;
-                            fourPoints[2] = points[0];
-                        }
-                        else{
-                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
-                            flag = "bad";
-                        }
-                    }
-                    if (i > 0){
-                        i--;
-                    }
-                }
-            }
-       }
+//       // primo punto (in alto a sx)
+
+////       int i, j = 0;
+////       for (int sum = 0; sum < intNum; sum++){
+////            i = sum;
+////            if (!(rectangles(i, j).containedPoints).empty()){
+////                chosenRectangles[0] = rectangles(i, j);
+////                fourPoints[0] = rectangles(i, j).containedPoints[0];
+////            }
+////            while (i > 0){
+////                i = i - 1;
+////                j = j + 1;
+////                if (!(rectangles(i, j).containedPoints).empty()){
+////                    chosenRectangles[0] = rectangles(i, j);
+////                    fourPoints[0] = rectangles(i, j).containedPoints[0];
+////                }
+////            }
+////            j = 0;
+////       }
+
+//       for (int sum = 0; sum < intNum; sum++)
+//       {
+
+//   int i = sum;
+//           for (int j = 0; j <= sum; j++)
+//           {
+//               if (!(rectangles(i, j).containedPoints).empty())
+//               {
+//                chosenRectangles[0] = rectangles(i, j);
+//                fourPoints[0] = rectangles(i, j).containedPoints[0];
+//               }
+//           }
+//           if (i > 0)
+//           {
+//               i--;
+//           }
+//       }
 
 
-       // secondo punto (in basso a dx)
-       if (flag != "bad"){
-            for (int i = m; i >= 0; i--){
-                for (int j = m; j >= i; j--){
-                    Rectangle rectangle = rectangles(i, j);
-                    vector<Point> points = rectangles.containedPoints();
-                    if (!points.empty()){
-                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1] && rectangle != chosenRectangles[2]){
-                            fourPoints[3] = points[0];
-                        }
-                        else{
-                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
-                            flag = "bad";
-                        }
-                    }
-                    if (i < m){
-                        i++;
-                    }
-                }
-            }
-       }
+//       // secondo punto (in basso a sx)
+//       for (int i = intNum - 1; i >= 0; i--)
+//       {
+//            int k = i;
+//            for (int j = 0; j <= (intNum - 1 - k); j++)
+//            {
+//                if (!(rectangles(i, j).containedPoints).empty())
+//                {
+//                 if ()
+//                 chosenRectangles[0] = rectangles(i, j);
+//                 fourPoints[0] = rectangles(i, j).containedPoints[0];
+//                }
+//                else
+//                {
+//                 cerr << "Rectangle already found by a previous zig-zagging." << endl;
+//                 flag = "bad";
+//                }
+
+//                if (i < intNum - 1)
+//                {
+//                    i++;
+//                }
+//            }
+//            k = 0;
+//       }
+
+//       // terzo punto (in alto a dx)
+//       if (flag != "bad"){
+//            for (int i = 0; i < m; i++){
+//                for (int j = m; j >= m - i; j--){
+//                    Rectangle rectangle = rectangles(i, j);
+//                    vector<Point> points = rectangles.containedPoints();
+//                    if (!points.empty()){
+//                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1]){
+//                            chosenRectangles[2] = rectangle;
+//                            fourPoints[2] = points[0];
+//                        }
+//                        else{
+//                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
+//                            flag = "bad";
+//                        }
+//                    }
+//                    if (i > 0){
+//                        i--;
+//                    }
+//                }
+//            }
+//       }
 
 
-       if (flag == "true"){
-           cout << "Zig-zagging algorithm worked well! The four points obtained by zig-zagging are: " << endl;
-           return fourPoints;
-       }
-       else{
-           cout << "Zig-zagging algorithm didn't work well! Four random points are: " << endl;
-           return PickFourRandomPoints(Delaunay.pointsVector);
-       }
-    }
+//       // secondo punto (in basso a dx)
+//       if (flag != "bad"){
+//            for (int i = m; i >= 0; i--){
+//                for (int j = m; j >= i; j--){
+//                    Rectangle rectangle = rectangles(i, j);
+//                    vector<Point> points = rectangles.containedPoints();
+//                    if (!points.empty()){
+//                        if (rectangle != chosenRectangles[0] && rectangle != chosenRectangles[1] && rectangle != chosenRectangles[2]){
+//                            fourPoints[3] = points[0];
+//                        }
+//                        else{
+//                            cerr << "Rectangle already found by a previous zig-zagging." << endl;
+//                            flag = "bad";
+//                        }
+//                    }
+//                    if (i < m){
+//                        i++;
+//                    }
+//                }
+//            }
+//       }
+
+
+//       if (flag == "true"){
+//           cout << "Zig-zagging algorithm worked well! The four points obtained by zig-zagging are: " << endl;
+//           return fourPoints;
+//       }
+//       else{
+//           cout << "Zig-zagging algorithm didn't work well! Four random points are: " << endl;
+//           return PickFourRandomPoints(Delaunay.pointsVector);
+//       }
+//    }
 }
