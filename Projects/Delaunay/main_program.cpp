@@ -24,48 +24,13 @@ int main()
 //_______________________________________________________________________________________________________________________
 //CREAZIONE E STAMPA GRIGLIA
 
-<<<<<<< HEAD
-    Grid grid = Grid(delaunay.pointsVector);
-//    for (int i = 0; i < grid.intNum; i++)
-//    {
-//        for (int j = 0; j < grid.intNum; j++)
-//        {
-//            Rectangle rectangle = grid.rectangles(i, j);
-//            vector<Point> recPoints = rectangle.containedPoints;
-//            for (Point point : recPoints)
-//            {
-//                cout << "Point " << ": (" << point.x << ", " << point.y << ")" << endl;
-//            }
-//        }
-//    }
-
-      grid.PointsInRectangle(delaunay.pointsVector);
-      array<Point, 4> firstPoints = grid.Snake();
-      cout << firstPoints[0];
-      cout << firstPoints[1];
-      cout << firstPoints[2];
-      cout << firstPoints[3];
-=======
 //    Grid grid = Grid(delaunay.pointsVector);
-//    //grid.Show();
-
-//_______________________________________________________________________________________________________________________
-//CHECK DELUNAY
-//    Point a = Point(0, 2);
-//    Point b = Point(4, 2);
-//    Point c = Point(2, 1);
-//    Point d = Point(2, 3);
-//    Triangle Tri1 = Triangle(a, b, c);
-//    Triangle Tri2 = Triangle(a, b, d);
-//    if (CheckConvex(Tri1, Tri2) == 1)
-//    {
-//       cout << "True" << endl;
-//    }
-//    if (DelunayProperty(Tri1, Tri2) == 0)
-//    {
-//       cout << "da flippare" << endl;
-//    }
->>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
+//    grid.PointsInRectangle(delaunay.pointsVector);
+//    array<Point, 4> firstPoints = grid.Snake();
+//    cout << firstPoints[0];
+//    cout << firstPoints[1];
+//    cout << firstPoints[2];
+//    cout << firstPoints[3];
 
 
 ////_______________________________________________________________________________________________________________________
@@ -85,7 +50,7 @@ int main()
 //       cout << "da flippare" << endl;
 //    }
 
-<<<<<<< HEAD
+
 ////_______________________________________________________________________________________________________________________
 ////ESEMPIO MESH
 
@@ -98,26 +63,6 @@ int main()
 //    Point point5 = Point(5,7);
 //    Point point6 = Point(7,2);
 
-//    Point externalPoint = Point(5,-1);
-=======
-    //Triangoli
-    Triangle triangle0 = Triangle(point0, point1, point2);
-    Triangle triangle1 = Triangle(point0, point1, point3);
-    Triangle triangle2 = Triangle(point0, point3, point4);
-    Triangle triangle3 = Triangle(point1, point2, point5);
-    Triangle triangle4 = Triangle(point0, point2, point6);
-
-    //Aggiunta triangoli
-    Mesh mesh = Mesh(triangle0);
-//    cout<<"Stampa riga di verifica"<<endl;
-//    cout<<*(mesh.convexHull->hullPoint)<<endl;
-
-    mesh.guideTriangles.push_back(&triangle1);
-    mesh.guideTriangles.push_back(&triangle2);
-    mesh.guideTriangles.push_back(&triangle3);
-    mesh.guideTriangles.push_back(&triangle4);
->>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
-
 //    //Triangoli
 //    Triangle triangle0 = Triangle(point0, point1, point2);
 //    Triangle triangle1 = Triangle(point0, point1, point3);
@@ -125,7 +70,6 @@ int main()
 //    Triangle triangle3 = Triangle(point1, point2, point5);
 //    Triangle triangle4 = Triangle(point0, point2, point6);
 
-<<<<<<< HEAD
 //    //Aggiunta triangoli
 //    Mesh mesh = Mesh(triangle0);
 //    cout<<"Stampa riga di verifica"<<endl;
@@ -135,18 +79,6 @@ int main()
 //    mesh.meshTriangles.push_back(triangle2);
 //    mesh.meshTriangles.push_back(triangle3);
 //    mesh.meshTriangles.push_back(triangle4);
-=======
-    //Elementi convex hull
-    convexHullElem* elem0 = mesh.convexHull;
-    //cout<<*(mesh.convexHull->hullPoint)<<endl;
-    //cout<<*(elem0->hullPoint)<<endl;
-    convexHullElem* elem1 = new convexHullElem(point6, triangle4);
-    convexHullElem* elem2 = new convexHullElem(point2, triangle4);
-    convexHullElem* elem3 = new convexHullElem(point5, triangle3);
-    convexHullElem* elem4 = new convexHullElem(point1, triangle3);
-    convexHullElem* elem5 = new convexHullElem(point3, triangle1);
-    convexHullElem* elem6 = new convexHullElem(point4, triangle2);
->>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
 
 //    mesh.guideTriangles.push_back(triangle1);
 //    mesh.guideTriangles.push_back(triangle2);
@@ -169,7 +101,6 @@ int main()
 //    elem2->SetTriangle(&triangle4);
 //    elem4->SetTriangle(&triangle3);
 
-<<<<<<< HEAD
 //    //Connessioni convex hull
 //    elem0->SetNext(elem1);
 //    elem1->SetNext(elem2);
@@ -187,35 +118,11 @@ int main()
 //    elem5->SetPrev(elem4);
 //    elem6->SetPrev(elem5);
 
-////_______________________________________________________________________________________________________________________
-////AGGIUNTA PUNTO ESTERNO
-
-//    //Stampa punti convex hull
-//    cout<<"ELEMENTI CONVEX HULL INIZIALE"<<endl;
-//    cout<<endl;
-//    cout<<*(elem0->hullPoint)<<endl;
-//    convexHullElem* currentElem1 = mesh.convexHull;
-//    for (int i=0; i<7; i++)
-//    {
-//        cout<<*(currentElem1->hullPoint);
-//        cout<<*(currentElem1->externalTriangle);
-//        currentElem1 = currentElem1->next;
-//    }
-//    cout<<endl;
-
-//    //Aggiunta di punto esterno
-//    cout<<"Prima di external:\n"<<&externalPoint<<endl;
-//    mesh.AddExternalPoint(externalPoint);
-//    cout<<"Dopo di external:\n"<<&externalPoint<<endl;
-
-//    //Stampa punti convex hull
-//    cout<<"ELEMENTI NUOVO CONVEX HULL"<<endl;
-=======
-    //Settaggio triangoli adiacenti
-    Triangle::SetAdiacentTriangle(triangle1, &triangle2, point3, point0);
-    Triangle::SetAdiacentTriangle(triangle0, &triangle1, point1, point0);
-    Triangle::SetAdiacentTriangle(triangle0, &triangle3, point2, point1);
-    Triangle::SetAdiacentTriangle(triangle0, &triangle4, point0, point2);
+//    //Settaggio triangoli adiacenti
+//    Triangle::SetAdiacentTriangle(triangle1, &triangle2, point3, point0);
+//    Triangle::SetAdiacentTriangle(triangle0, &triangle1, point1, point0);
+//    Triangle::SetAdiacentTriangle(triangle0, &triangle3, point2, point1);
+//    Triangle::SetAdiacentTriangle(triangle0, &triangle4, point0, point2);
 
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO ESTERNO
@@ -240,7 +147,6 @@ int main()
 
 //    //Stampa punti convex hull
 //    cout<<"\nELEMENTI NUOVO CONVEX HULL"<<endl;
->>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
 //    cout<<endl;
 //    convexHullElem* currentElem2 = mesh.convexHull;
 //    for (int i=0; i<8; i++)
@@ -250,8 +156,6 @@ int main()
 //        currentElem2 = currentElem2->next;
 //    }
 //    cout<<endl;
-<<<<<<< HEAD
-=======
 
 //_______________________________________________________________________________________________________________________
 //AGGIUNTA PUNTO INTERNO
@@ -304,8 +208,6 @@ int main()
 
 //    cout<<"Triangoli in array"<<endl;
 //    for (Triangle tr:trArray){cout<<tr<<endl;}
->>>>>>> 828234af3ad90a71e5c46c93aafb1c06f38285e3
-
 
 //_______________________________________________________________________________________________________________________
 //ALTRO
@@ -325,6 +227,13 @@ int main()
 
 //_______________________________________________________________________________________________________________________
 //CHIUSURA FUNZIONE
+//    Point point1 = Point(0,1);
+//    Point point2 = Point(1,1);
+//    Point point3 = Point(0,0);
+//    Point extPoint = Point(2,2);
+//    Triangle triangleProva = Triangle(point1, point2, point3);
+//    int result = triangleProva.ContainsPoint(extPoint);
+//    cout << result << endl;
     return 0;
 }
 
