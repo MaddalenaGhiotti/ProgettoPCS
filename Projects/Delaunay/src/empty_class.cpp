@@ -24,7 +24,7 @@ namespace DelaunayLibrary
 
         Mesh mesh = Mesh(*firstTriangle);
         vector<Point*> shuffledPoints = pointsVector;
-        random_shuffle(pointsVector.begin(), pointsVector.end());
+        //random_shuffle(pointsVector.begin(), pointsVector.end());
 
         pointsVector.insert(pointsVector.begin(),&firstPoints[3]);
 
@@ -178,7 +178,7 @@ namespace DelaunayLibrary
         }
         string line;
         getline(file, line);
-//        for(int i=0; i<15; i++){
+//        for(int i=0; i<20; i++){
 //        while (!file.eof()){
 //            getline(file, line);
 //            int useless;
