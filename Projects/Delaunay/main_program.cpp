@@ -11,10 +11,12 @@ int main()
 //_______________________________________________________________________________________________________________________
 //GENERALE
 
-    string inputFile = "Test2.csv";
+    string inputFile = "Test1.csv";
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
     delaunay.ExecuteDelaunay();
+
+
 //_______________________________________________________________________________________________________________________
 ////ESEMPIO MESH
 
