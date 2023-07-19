@@ -11,7 +11,7 @@ int main()
 //_______________________________________________________________________________________________________________________
 //GENERALE
 
-    string inputFile = "Test1.csv";
+    string inputFile = "Test3.csv";
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
     delaunay.ExecuteDelaunay();
