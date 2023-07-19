@@ -15,6 +15,8 @@ int main()
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
     delaunay.ExecuteDelaunay();
+
+
 //_______________________________________________________________________________________________________________________
 ////ESEMPIO MESH
 

@@ -50,7 +50,7 @@ namespace DelaunayLibrary
         int ContainsPoint(Point& point);
         Triangle* FromRootToLeaf(Point& point);
         static void SetAdiacentTriangle(Triangle& triangle1,Triangle* triangle2, Point& tail, Point& head);
-        static void SetAdiacentTriangleMod(Triangle& triangle1,Triangle* triangle2, Point* Punto1, Point* Punto2);
+        static void SetAdiacentTriangleMod(Triangle* triangle1,Triangle* triangle2, Point* Punto1, Point* Punto2);
         static array<Point*,4> FindCommonEdge(Triangle& triangle1, Triangle& triangle2);
         // i primi due punti sono i punti del lato in comune, gli altri due sono i punti "esterni"
         static array<Triangle*, 2> Flip(Triangle* Triangle1, Triangle* Triangle2);
@@ -125,14 +125,14 @@ namespace DelaunayLibrary
     {
     public:
         Point *hullPoint;
-        Triangle *externalTriangle;
+        Triangle *externalTriangle; //Triangolo adiacente al lato esterno precedente il punto (andando in senso antiorario)
         convexHullElem *prev;
         convexHullElem *next;
     public:
         convexHullElem() = default;
         //convexHullElem(Point& point, Triangle& triangle): hullPoint(new Point(point)), externalTriangle(new Triangle(triangle)) {}
         convexHullElem(Point& point, Triangle& triangle): hullPoint(&point), externalTriangle(&triangle) {}
-        convexHullElem(Point* point, Triangle& triangle): hullPoint(point), externalTriangle(&triangle) {}
+        //convexHullElem(Point* point, Triangle& triangle): hullPoint(point), externalTriangle(&triangle) {}
         void SetPrev(convexHullElem* previous){prev=previous;}
         void SetNext(convexHullElem* nextOne){next=nextOne;}
         void SetTriangle(Triangle* triangle){externalTriangle=triangle;}

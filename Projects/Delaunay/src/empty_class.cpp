@@ -15,10 +15,10 @@ namespace DelaunayLibrary
         Grid grid = Grid(pointsVector); //Costruzione griglia
         grid.PointsInRectangle(pointsVector);  //Aggiunge ad ogni punto il rettangolo a cui è interno e ad ogni rettangolo il vector dei punti a cui è interno. (Valutare se fondere con costruttore griglia)
         array<Point, 4> firstPoints = grid.Snake();  //Restituisce 4 punti di cui i primi 3 sono il triangolone iniziale (Attenzione a punti allineati, stesso punto, ecc.)
-        cout << firstPoints[0];
-        cout << firstPoints[1];
-        cout << firstPoints[2];
-        cout << firstPoints[3];
+//        cout << firstPoints[0];
+//        cout << firstPoints[1];
+//        cout << firstPoints[2];
+//        cout << firstPoints[3];
 
         Triangle* firstTriangle = new Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
 
@@ -30,20 +30,20 @@ namespace DelaunayLibrary
         bool flag=false;
         for (Point* point : pointsVector)
         {
-            cout<<"Punto da aggiungere: "<<*point;
+//            cout<<"Punto da aggiungere: "<<*point;
             if (*point!=firstPoints[0] && *point!=firstPoints[1] && *point!=firstPoints[2] && (*point!=firstPoints[3] || flag == false))
             {
                 flag = true;
                 int pos = mesh.CheckInside(*point);
                 if (pos==0) //Punto esterno
                 {
-                    cout<<"Punto esterno"<<endl;
+                    //cout<<"Punto esterno"<<endl;
                     //cout<<"ext"<<endl;
                     mesh.AddExternalPoint(*point);
                 }
                 else  //Punto interno o sul bordo
                 {
-                    cout<<"Punto interno o sul bordo"<<endl;
+                    //cout<<"Punto interno o sul bordo"<<endl;
                     //cout<<"int"<<endl;
                     //DA ELIMINARE (non tutto) --------
                     for (Triangle* trPtr:mesh.guideTriangles)
@@ -62,10 +62,10 @@ namespace DelaunayLibrary
                     //---------------------------------
 
                 }
-                cout<<"Punto aggiunto"<<endl;
-                cout<<endl;
+                //cout<<"Punto aggiunto"<<endl;
+                //cout<<endl;
             }
-            cout<<"------------------------------------------------------------------"<<endl;
+            //cout<<"------------------------------------------------------------------"<<endl;
             // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo guida a cui è interno)
             // If interno AddInternalPoint, if external AddExternalPoint.
         }
@@ -75,6 +75,16 @@ namespace DelaunayLibrary
         for (array<Point,2> side:finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
         OutputEdges();
         cout<<"Numero totale di lati: "<<finalEdges.size()<<endl;
+        //Stampa punti convex hull
+        cout<<"\nELEMENTI NUOVO CONVEX HULL\n"<<endl;
+        convexHullElem* currentElem2 = mesh.convexHull;
+        for (int i=0; i<20; i++)
+        {
+            cout<<*(currentElem2->hullPoint);
+            cout<<*(currentElem2->externalTriangle);
+            currentElem2 = currentElem2->next;
+        }
+        cout<<"------------------------------------------------------------------"<<endl;
         //ELIMINARE OGGETTI DALLA MEMORIA!!
         //---------------------------------------------
     }
@@ -102,7 +112,7 @@ namespace DelaunayLibrary
         Point* head = elemHead->hullPoint;
         Point* tail = elemTail->hullPoint;
         double d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-        cout<<"Prod vett. primo coso: "<<d<<endl;
+        //cout<<"Prod vett. primo coso: "<<d<<endl;
         while (elemHead!=convexHull && d>0)
         {
             elemTail = elemHead;
@@ -110,7 +120,7 @@ namespace DelaunayLibrary
             head = elemHead->hullPoint;
             tail = elemTail->hullPoint;
             d = d*((point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y));
-            cout<<"Prod vett.: "<<d<<endl;
+            //cout<<"Prod vett.: "<<d<<endl;
         }
         if (d>=0){return 1;}
         return 0;
@@ -133,26 +143,34 @@ namespace DelaunayLibrary
         adiacentTriangles = {nullptr, nullptr, nullptr};
     }
 
-//Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
-//mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
-    int Triangle::ContainsPoint(Point& point)
-    {
-        double prod1 = (point.x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (point.y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
-        double prod2 = (point.x - vertices[2].x) * (vertices[1].y - vertices[2].y) - (vertices[1].x - vertices[2].x) * (point.y - vertices[2].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e secondo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
-        double prod3 = (point.x - vertices[0].x) * (vertices[2].y - vertices[0].y) - (vertices[2].x - vertices[0].x) * (point.y - vertices[0].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e terzo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
-        cout<<prod1<<endl;
-        cout<<prod2<<endl;
-        cout<<prod3<<endl;
-        if (prod1>0 && prod2>0 && prod3>0) //Il punto si trova a destra di tutti i lati o a sinistra di tutti i lati (interno)
-            return 0;
-        if (prod1<0 || prod2<0 || prod3<0) //Il punto si trova a destra di almeno un lato e a sinistra di almeno un lato (esterno)
-            return -1;
-        if (prod1==0) //Il punto si trova sul primo lato (assumiamo non possano esserci punti sovrapposti)
-            return 1;
-        if (prod2==0) //Il punto si trova sul secondo lato
-            return 2;
-        return 3; //Per esclusione il punto si trova sul terzo lato
-    }
+    //Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
+    //mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
+        int Triangle::ContainsPoint(Point& point)
+        {
+            double tol = 0.0000000000000001;
+            double prod1 = (point.x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (point.y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
+            double prod2 = (point.x - vertices[2].x) * (vertices[1].y - vertices[2].y) - (vertices[1].x - vertices[2].x) * (point.y - vertices[2].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e secondo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
+            double prod3 = (point.x - vertices[0].x) * (vertices[2].y - vertices[0].y) - (vertices[2].x - vertices[0].x) * (point.y - vertices[0].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e terzo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
+            cout<<prod1<<endl;
+            cout<<prod2<<endl;
+            cout<<prod3<<endl;
+            if (prod1>tol && prod2>tol && prod3>tol) //Il punto si trova a destra di tutti i lati o a sinistra di tutti i lati (interno)
+            {
+                cout << "Il punto è interno" << endl;
+                return 0;
+            }
+            if (prod1<-tol || prod2<-tol || prod3<-tol)
+            {
+                cout << "Il punto si trova a destra di almeno un lato e a sinistra di almeno un lato (esterno)" << endl;
+                return -1;
+            }
+
+            if (abs(prod1)<tol) //Il punto si trova sul primo lato (assumiamo non possano esserci punti sovrapposti)
+                return 1;
+            if (abs(prod2)<tol) //Il punto si trova sul secondo lato
+                return 2;
+            return 3; //Per esclusione il punto si trova sul terzo lato
+        }
 
     void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle* addingTriangle, Point& tail, Point& head) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
     {
@@ -272,31 +290,80 @@ namespace DelaunayLibrary
 
     // dati due triangoli e due punti che sono ad essi comuni (in un ordine non necessariamente specificato), aggiorna l'array di
     // adiacenze in senso ordinato
-    void Triangle::SetAdiacentTriangleMod(Triangle& existingTriangle, Triangle* addingTriangle, Point* Punto1, Point* Punto2) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
+    void Triangle::SetAdiacentTriangleMod(Triangle* existingTriangle, Triangle* addingTriangle, Point* Punto1, Point* Punto2) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
     {
-        array<Point*, 2> tail_head = findOrderedEdge(&existingTriangle, Punto1, Punto2);
+        array<Point*, 2> tail_head = findOrderedEdge(existingTriangle, Punto1, Punto2);
         Point* tail_P = tail_head[0];
         Point* head_P = tail_head[1];
         //Settare triangolo adiacente a triangolo già esistente
-        if (tail_P != nullptr){
-            if (existingTriangle.vertices[0] == *tail_P){existingTriangle.adiacentTriangles[0] = addingTriangle;}
-            else if (existingTriangle.vertices[1] == *tail_P){existingTriangle.adiacentTriangles[1] = addingTriangle;}
-            else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
+        if (tail_P != nullptr)
+        {        if (existingTriangle->vertices[0] == *tail_P){existingTriangle->adiacentTriangles[0] = addingTriangle;}
+            else if (existingTriangle->vertices[1] == *tail_P){existingTriangle->adiacentTriangles[1] = addingTriangle;}
+            else {existingTriangle->adiacentTriangles[2] = addingTriangle;}
         }
         //Settare triangolo adiacente a triangolo aggiunto
         if (addingTriangle!=nullptr){
-            if (addingTriangle->vertices[0] == *head_P){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
-            else if (addingTriangle->vertices[1] == *head_P){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
-            else {addingTriangle->adiacentTriangles[2] = &existingTriangle;}}
+            if (addingTriangle->vertices[0] == *head_P){addingTriangle->adiacentTriangles[0] = existingTriangle;}
+            else if (addingTriangle->vertices[1] == *head_P){addingTriangle->adiacentTriangles[1] = existingTriangle;}
+            else {addingTriangle->adiacentTriangles[2] = existingTriangle;}}
         }
 
     // dati due triangoli, restituisce un vettore output che presenta al proprio interno, in ordine:
     //-i primi due punti del lato in comune ai due triangoli;
     //-i due punti non comuni dei triangoli;
     // se i due triangoli non presentano punti in comune, restituisce semplicemente un array di nullptr
+//    array<Point*,4> Triangle::FindCommonEdge(Triangle& triangle1, Triangle& triangle2)
+//    {
+//        array<Point*, 4> Output = {nullptr, nullptr, nullptr, nullptr};
+//        int k = 0;
+//        int sign = 0;
+//        Point* esterno1;
+//        Point* esterno2;
+//        array<Point*,2> Lato = {nullptr, nullptr};
+//        for (int i = 0; i<3; i++)
+//        {
+//           for (int j = 0; j<3; j++)
+//           {
+//                if (triangle1.vertices[i] == triangle2.vertices[j])
+//                {
+//                    Lato[k] = &(triangle2.vertices[j]);
+//                    k += 1;
+//                    sign = 1;
+//                    break;
+//                }
+//           }
+//           if (sign == 0)
+//           {
+//                esterno1 = &(triangle1.vertices[i]);
+//           }
+//           sign = 0;
+//        }
+//        if ((Lato[0] == nullptr) or (Lato[1] == nullptr))
+//        {
+//           return Output;
+//        }
+//        for (int m = 0; m<3; m++)
+//        {
+//            if ((triangle2.vertices[m] != *Lato[0]) && (triangle2.vertices[m] != *Lato[1]))
+//            {
+//                esterno2 = &(triangle2.vertices[m]);
+//                break;
+//            }
+//        }
+
+//        Output[0] = Lato[0];
+//        Output[1] = Lato[1];
+//        Output[2] = esterno1;
+//        Output[3] = esterno2;
+
+//        return Output;
+//    }
+    // dati due triangoli, restituisce un vettore output che presenta al proprio interno, in ordine:
+    //-i primi due punti del lato in comune ai due triangoli;
+    //-i due punti non comuni dei triangoli;
+    // se i due triangoli non presentano punti in comune, restituisce semplicemente un array di nullptr
     array<Point*,4> Triangle::FindCommonEdge(Triangle& triangle1, Triangle& triangle2)
     {
-
         array<int, 2> posOpp = {-1,-1};  //Posizione 0: Opposto in tr1; Posizione 1: Opposto in tr2
 
         for (int i=0; i<3; i++)
@@ -318,17 +385,18 @@ namespace DelaunayLibrary
            if (found == true){posOpp[0]=i; break;}
         }
 
+        int opp1 = posOpp[0];
+        int opp2 = posOpp[1];
         array<Point*,4> output = {nullptr,nullptr,nullptr,nullptr};
         if ((triangle1.vertices[(opp1+1)%3] == triangle2.vertices[(opp2+2)%3]) && (triangle1.vertices[(opp1+2)%3] == triangle2.vertices[(opp2+1)%3]))
         {
-            output[0] = *(triangle1.vertices[(opp1+1)%3]);
-            output[1] = *(triangle1.vertices[(opp1+2)%3]);
-            output[2] = *(triangle1.vertices[opp1]);
-            output[3] = *(triangle2.vertices[opp2]);
+            output[0] = &(triangle1.vertices[(opp1+1)%3]);
+            output[1] = &(triangle1.vertices[(opp1+2)%3]);
+            output[2] = &(triangle1.vertices[opp1]);
+            output[3] = &(triangle2.vertices[opp2]);
         }
-        return Output;
+        return output;
     }
-
     // aggiorna le adiacenze del nuovo triangolo formatosi in seguito al flip grazie alle liste di adiacenza dei due vecchi
     // triangoli Triangle1 e Triangle2
     void Triangle::adjourn(Triangle* Triangle_new_1, Triangle* Triangle1, Triangle* Triangle2)
@@ -360,21 +428,67 @@ namespace DelaunayLibrary
                // cout << *Output[i] << endl;
            }
 
-           bool isEmpty = false;
-               for (const auto& element : Output)
-               {
-                   // cout << element << endl;
-                   if (element == nullptr)
-                   {
-                       // cout << "whaat" << endl;
-                       isEmpty = true;
-                   }
-               }
-            if (isEmpty == false)
-            {
-                Triangle::SetAdiacentTriangleMod(*Triangle_new_1, triangolo, Output[2], Output[3]);
-            }
+           if (Output[0] != nullptr)
+           {
+                // cout << "DEVO FISSARE IL NUOVO TRIANGOLO ADIACENTE" << endl;
+
+                //cout << *Triangle_new_1 << endl;
+                //cout << *triangolo << endl;
+                array<Point*, 4> OutputTriangle = FindCommonEdge(*Triangle_new_1, *triangolo);
+                Triangle::SetAdiacentTriangle(*Triangle_new_1, triangolo, *OutputTriangle[0], *OutputTriangle[1]);// cout << "whaat" << endl;
+                //cout << "HO FISSATO IL NUOVO TRIANGOLO ADIACENTE" << endl;
+                //cout<<"TriangoliAdiacenti TRIANGLE_NEW_1 DOPO FISSO ADIACENTE****************************************************" <<endl;
+                for (int i = 0; i<3; i++)
+                 {
+                    if (Triangle_new_1->adiacentTriangles[i] != nullptr)
+                    {
+                        //cout<<*(Triangle_new_1->adiacentTriangles[i])<<endl;
+                    }
+                 }
+                //cout<<"***********************************************************************"<<endl;
+
+           }
+
         }
+    }
+
+
+    Delaunay::Delaunay(const string& inputFileName)
+    {
+        fileName = inputFileName;
+        ifstream file;
+        file.open(fileName);
+        if (file.fail()){
+            cerr << "Error while opening file" << endl;
+        }
+        string line;
+        getline(file, line);
+//        for(int i=0; i<40; i++){
+//        while (!file.eof()){
+//            getline(file, line);
+//            int useless;
+//            double x;
+//            double y;
+//            istringstream ss(line);
+//            ss >> useless >> x >> y;
+//            Point* point = new Point(x, y);
+//            // cout<<"Punto letto "<<i<<*point<<endl;
+//            pointsVector.push_back(point);
+        while (getline(file, line)){
+            int useless;
+            double x;
+            double y;
+            istringstream ss(line);
+            ss >> useless >> x >> y;
+            Point* point = new Point(x, y);
+            pointsVector.push_back(point);
+        }
+    }
+
+    array<Point,2> Point::OrederSide(Point& point1, Point& point2)
+    {
+        if (point1<point2){return {point1,point2};}
+        else {return {point2,point1};}
     }
 
     void Delaunay::Show()
@@ -557,35 +671,74 @@ namespace DelaunayLibrary
     // dei due triangoli a partire dai quali si è originato il flip;
     array<Triangle*, 2> Triangle::Flip(Triangle* Triangle1, Triangle* Triangle2)
     {
-        array<int, 2> Output = Triangle::FindCommonEdge(*Triangle1, *Triangle2);
+        Point* esterno1;
+        Point* esterno2;
+        Point* Lato[2];
+        array<Point*, 4> Output = Triangle::FindCommonEdge(Triangle1, Triangle2);
         // cout<<"swag"<<endl;
-        int opp1 = Output[0];
-        int opp2 = Output[1];
+        esterno1 = Output[2];
+        esterno2 = Output[3];
+        Lato[0] = Output[0];
+        Lato[1] = Output[1];
 
-        Triangle* Triangle_new_1 = new Triangle(Triangle1->vertices[opp1], Triangle2->vertices[opp2], Triangle1->vertices[(opp1+2)%3]);
-        Triangle* Triangle_new_2 = new Triangle(Triangle1->vertices[opp1], Triangle2->vertices[opp2], Triangle1->vertices[(opp1+1)%3]);
+        Triangle* Triangle_new_1 = new Triangle(*esterno1, *esterno2, *Lato[0]);
+        Triangle* Triangle_new_2 = new Triangle(*esterno1, *esterno2, *Lato[1]);
 
-        //PROVA MADDI
-        //Tra i due
-        Triangle::SetAdiacentTriangle(*Triangle_new_1, Triangle_new_2,  Triangle2->vertices[opp2],  Triangle1->vertices[opp1]);
-        //Con esterni
-        Triangle::SetAdiacentTriangle(*Triangle_new_1, triangle1->adiacentTriangles[(opp1+2)%3], triangle1->vertices[(opp1+2)%3], triangle1->vertices[opp1]);
-        Triangle::SetAdiacentTriangle(*Triangle_new_1, triangle2->adiacentTriangles[opp2], triangle1->vertices[(opp1+2)%3], triangle1->vertices[opp1]);
+        array<Point*, 4> Output_new = Triangle::FindCommonEdge(*Triangle_new_1, *Triangle_new_2);
 
-        Triangle::SetAdiacentTriangle(*triangle2, bigTriangle->adiacentTriangles[1], bigTriangle->vertices[1], bigTriangle->vertices[2]);
-        Triangle::SetAdiacentTriangle(*triangle2, triangle3, bigTriangle->vertices[2], point);
-        Triangle::SetAdiacentTriangle(*triangle3, triangle1, bigTriangle->vertices[0], point);
-        //FINE PROVA MADDI
+        Triangle::SetAdiacentTriangle(*Triangle_new_1, Triangle_new_2, *Output_new[0], *Output_new[1]);
+        //Triangle::SetAdiacentTriangle(*Triangle_new_1, Triangle_new_2, &esterno1, &esterno2);
+        // cout<<"swag"<<endl;
+        //cout<< "TRIANGOLO 1" << endl;
+        //cout << Triangle1 << endl;
+        //cout<<"TriangoliAdiacenti TRIANGOLO 1****************************************************" <<endl;
+        //for (int i = 0; i<3; i++)
+//         {
+//            if (Triangle1.adiacentTriangles[i] != nullptr)
+//            {
+//                cout<<*(Triangle1.adiacentTriangles[i])<<endl;
+//            }
+//         }
+//        cout<<"***********************************************************************"<<endl;
+//        cout<< "TRIANGOLO 2" << endl;
+//        cout << Triangle2 << endl;
+        Triangle::adjourn(Triangle_new_1, &Triangle1, &Triangle2);
+        Triangle::adjourn(Triangle_new_1, &Triangle2, &Triangle1);
+//        cout << "fine aggiornamento" << endl;
+//        cout<<"TriangoliAdiacenti TRIANGLE_NEW_1 dopo processo****************************************************" <<endl;
+//        for (int i = 0; i<3; i++)
+//         {
+//            if (Triangle_new_1->adiacentTriangles[i] != nullptr)
+//            {
+//                cout<<*(Triangle_new_1->adiacentTriangles[i])<<endl;
+//            }
+//         }
+//        cout<<"***********************************************************************"<<endl;
+        //cout << "ok" << endl;
+        Triangle::adjourn(Triangle_new_2, &Triangle2, &Triangle1);
+        Triangle::adjourn(Triangle_new_2, &Triangle1, &Triangle2);
+        //cout<<"ADIACENZE TRAINGOLI DOPO FLIP ++++++++++++++++++++++++++++++++++++++++++" << endl;
+        //cout << "Triangolo_new_1 \n" << *Triangle_new_1 << endl;
+        //cout<<"TriangoliAdiacenti****************************************************" <<endl;
+//        for (int i = 0; i<3; i++)
+//         {
+//            if (Triangle_new_1->adiacentTriangles[i] != nullptr)
+//            {
+//                cout<<*(Triangle_new_1->adiacentTriangles[i])<<endl;
+//            }
+//         }
+//        cout<<"***********************************************************************"<<endl;
+//        cout << "Triangolo_new_2 \n" << *Triangle_new_2 << endl;
+//        cout<<"TriangoliAdiacenti****************************************************" <<endl;
+//        for (int i = 0; i<3; i++)
+//         {
+//            if (Triangle_new_2->adiacentTriangles[i] != nullptr)
+//            {
+//                cout<<*(Triangle_new_2->adiacentTriangles[i])<<endl;
+//            }
+//         }
+//        cout<<"***********************************************************************"<<endl;
 
-//        Triangle::SetAdiacentTriangleMod(*Triangle_new_2, Triangle_new_1, esterno1, esterno2);
-//        //Triangle::SetAdiacentTriangle(*Triangle_new_1, Triangle_new_2, &esterno1, &esterno2);
-//        // cout<<"swag"<<endl;
-
-//        Triangle::adjourn(Triangle_new_1, Triangle1, Triangle2);
-//        Triangle::adjourn(Triangle_new_1, Triangle2, Triangle1);
-//        //cout << "ok" << endl;
-//        Triangle::adjourn(Triangle_new_2, Triangle2, Triangle1);
-//        Triangle::adjourn(Triangle_new_2, Triangle1, Triangle2);
         //cout << "ok2" << endl;
 
         Triangle1->pointedTriangles.push_back(Triangle_new_1);
@@ -668,7 +821,7 @@ namespace DelaunayLibrary
 
     Mesh::Mesh (Triangle& triangle)
     {
-        meshTriangles.push_back(triangle);
+        //meshTriangles.push_back(triangle);
         guideTriangles.push_back(&triangle);
         //Creazione dei tre oggetti Convex Hull
         convexHullElem* firstElem = new convexHullElem(triangle.vertices[0], triangle);
@@ -721,20 +874,66 @@ namespace DelaunayLibrary
             //Aggiunta di un nuovo triangolo
             Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
             newTriangles.push_back(newGuideTriangle);
-            meshTriangles.push_back(*newGuideTriangle);
+            // meshTriangles.push_back(*newGuideTriangle);
             guideTriangles.push_back(newGuideTriangle);
-            Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
-            //Aggiornamento adiacenze
-//            cout<<"Testa\n"<<*head<<"\nCoda\n"<<*tail<<endl;
-//            Point* midPoint = new Point(abs((tail->x)+(head->x))/2,abs((tail->y)+(head->y))/2);
-//            cout<<"Punto medio\n"<<*midPoint<<endl;
-//            Triangle* lastTrPtr = (elemHead->externalTriangle)->FromRootToLeaf(*midPoint);
-//            Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *tail, *head);
-//            delete midPoint;
 
-//            cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
-//            cout<<endl;
-            //Aggiunta di un nuovo elemento nel convex hull
+            //Aggiornamento adiacenze
+
+            //Stampa punti convex hull
+//            cout<<"\nELEMENTI NUOVO CONVEX HULL\n"<<endl;
+//            convexHullElem* currentElem2 = convexHull;
+//            for (int i=0; i<20; i++)
+//            {
+//                cout<<*(currentElem2->hullPoint);
+//                cout<<*(currentElem2->externalTriangle);
+//                currentElem2 = currentElem2->next;
+//            }
+//            cout<<"------------------------------------------------------------------"<<endl;
+
+            Point* midPoint = new Point(((tail->x)+(head->x))/2,((tail->y)+(head->y))/2);
+            cout<<"Punto medio\n"<<*midPoint<<endl;
+            cout<<"Punto esterno\n"<<point<<endl;
+            Triangle* ExternalTriangle = elemHead->externalTriangle;
+            Triangle* lastTrPtr = ExternalTriangle->FromRootToLeaf(*midPoint);
+            cout<<"Triangolo guida esistente\n"<<*(elemHead->externalTriangle)<<endl;
+            cout << "Triangoli adiacenti del triangolo guida interno e già esistente----------------------------------------" << endl;
+            for (int j = 0; j < 3; j++)
+            {
+
+                if (ExternalTriangle->adiacentTriangles[j] != nullptr)
+                {
+                    cout << *(ExternalTriangle->adiacentTriangles[j]) << endl;
+                }
+            }
+            cout << "------------------------------------------------------------------------" << endl;
+            cout<<"Triangolo guida aggiunto\n"<<*newGuideTriangle<<endl;
+            cout << "Triangoli adiacenti del triangolo guida aggiunto----------------------------------------" << endl;
+            for (int j = 0; j < 3; j++)
+            {
+                if (newGuideTriangle->adiacentTriangles[j] != nullptr)
+                {
+                    cout << *(newGuideTriangle->adiacentTriangles[j]) << endl;
+                }
+            }
+            cout << "------------------------------------------------------------------------" << endl;
+            cout<<"Ultimo triangolo sul bordo\n"<<*lastTrPtr<<endl;
+            cout << "Triangoli adiacenti del triangolo sul bordo----------------------------------------" << endl;
+            for (int j = 0; j < 3; j++)
+            {
+                if (lastTrPtr->adiacentTriangles[j] != nullptr)
+                {
+                    cout << *(lastTrPtr->adiacentTriangles[j]) << endl;
+                }
+            }
+            cout << "------------------------------------------------------------------------" << endl;
+            array<Point*,4> check = Triangle::FindCommonEdge(*newGuideTriangle, *lastTrPtr);
+            cout<<"Primo elemento chech: "<<check[0]<<endl;
+            Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *check[1], *check[0]);
+            delete midPoint;
+
+            cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
+            cout<<endl;
+            // Aggiunta di un nuovo elemento nel convex hull
             newElem = new convexHullElem(point, *newGuideTriangle);
             newElem->SetPrev(elemTail);
             elemTail->SetNext(newElem);
@@ -761,10 +960,22 @@ namespace DelaunayLibrary
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
+                //Aggiornamento adiacenze tra i nuovi triangoli del convex hull
+                array<Point*, 4> Check = Triangle::FindCommonEdge(*newGuideTriangle, *(newTriangles.back()));
+                Triangle::SetAdiacentTriangle(*newGuideTriangle, newTriangles.back(), *Check[0], *Check[1]);
+
                 newTriangles.push_back(newGuideTriangle);
-                meshTriangles.push_back(*newGuideTriangle);
+                //meshTriangles.push_back(*newGuideTriangle);
                 guideTriangles.push_back(newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+
+                //Aggiornamento adiacenze
+                Point* midPoint = new Point(abs((tail->x)+(head->x))/2,abs((tail->y)+(head->y))/2);
+                Triangle* lastTrPtr = (elemHead->externalTriangle)->FromRootToLeaf(*midPoint);
+                array<Point*, 4> Prova2 = Triangle::FindCommonEdge(*lastTrPtr, *newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *Prova2[0], *Prova2[1]);
+                delete midPoint;
+
+
 //                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
 //                cout<<endl;
 
@@ -806,10 +1017,20 @@ namespace DelaunayLibrary
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
+                if (i != 0)
+                {
+                    array<Point*, 4> Output_giusto_1 = Triangle::FindCommonEdge(*newGuideTriangle, *(newTriangles.back()));
+                    Triangle::SetAdiacentTriangle(*newGuideTriangle, newTriangles.back(), *(Output_giusto_1[0]), *(Output_giusto_1[1]));
+                }
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
                 guideTriangles.push_back(newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                //Aggiornamento adiacenze
+                Point* midPoint = new Point(abs((tail->x)+(head->x))/2,abs((tail->y)+(head->y))/2);
+                Triangle* lastTrPtr = (elemHead->externalTriangle)->FromRootToLeaf(*midPoint);
+                array<Point*, 4> Output_giusto = Triangle::FindCommonEdge(*lastTrPtr, *newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *Output_giusto[0], *Output_giusto[1]);
+                delete midPoint;
 //                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
 //                cout<<endl;
                 //Eliminazione dal convex hull dell'elemento in coda al vettore
@@ -849,14 +1070,29 @@ namespace DelaunayLibrary
             d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
 
             //Inizio a girare in senso orario
+            int j = 0;
             while (d<0)
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
+                if (j == 0)
+                {
+                    array<Point*, 4> Output_2 = Triangle::FindCommonEdge(*newGuideTriangle, *(newTriangles[0]));
+                    Triangle::SetAdiacentTriangle(*newGuideTriangle, newTriangles[0], *Output_2[0], *Output_2[1]);
+                }
+                else
+                {
+                    array<Point*, 4> Output_3 = Triangle::FindCommonEdge(*newGuideTriangle, *(newTriangles.back()));
+                    Triangle::SetAdiacentTriangle(*newGuideTriangle, newTriangles.back(), *Output_3[0], *Output_3[1]);
+                }
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
                 guideTriangles.push_back(newGuideTriangle);
-                Triangle::SetAdiacentTriangle(*(elemHead->externalTriangle), newGuideTriangle, *tail, *head);
+                //Aggiornamento adiacenze
+//                Point* midPoint = new Point(abs((tail->x)+(head->x))/2,abs((tail->y)+(head->y))/2);
+//                Triangle* lastTrPtr = (elemTail->externalTriangle)->FromRootToLeaf(*midPoint);
+//                Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *tail, *head);
+//                delete midPoint;
 //                cout<<"Nuovo triangolo radice:\n"<<*newGuideTriangle;
 //                cout<<endl;
                 //Eliminazione dal convex hull dell'elemento in coda al vettore
@@ -869,6 +1105,7 @@ namespace DelaunayLibrary
                 head = elemHead->hullPoint;
                 tail = elemTail->hullPoint;
                 d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
+                j++;
             }
 
             //Aggiunta di un nuovo legame nel convex hull
@@ -885,14 +1122,19 @@ namespace DelaunayLibrary
 //            cout<<endl;
 //            //..................
         }
+        Delunay(newTriangles);
     }
 
     Triangle* Triangle::FromRootToLeaf(Point& point)
     {
+        cout<<"loop del from root to leaf"<<endl;
         if (pointedTriangles.empty()){return this;}
         for (Triangle* tr:pointedTriangles)
         {
+            cout << "Entra in un nuovo loop" << endl;
+            cout << *tr << endl;
             if (tr->ContainsPoint(point)!=-1){cout<<"Pointed triangle\n"<<*tr<<endl; return tr->FromRootToLeaf(point);}
+            cout << "non contiene il PUNTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<< endl; //Madare messaggio di errore e stoppare il programma!!!
         }
     }
 
@@ -931,16 +1173,22 @@ namespace DelaunayLibrary
     void Mesh::AddSidePoint(Point& point, Triangle* bigTriangle, int side)
     {
         //cout<<side<<endl;
-        cout<<"Punto su un lato"<<endl;
-        cout<<"BigTriangle"<<*bigTriangle<<endl;
+        //cout<<"Punto su un lato"<<endl;
+        //cout<<"BigTriangle"<<*bigTriangle<<endl;
         //Se il punto è su un lato tra due triangoli
-        cout << "Puntatore del triangolo adiacente" << endl;
-        cout << bigTriangle->adiacentTriangles[side-1] << endl;
-        cout<<endl;
+        //cout << "Puntatore del triangolo adiacente" << endl;
+        //cout << bigTriangle->adiacentTriangles[side-1] << endl;
+        if (bigTriangle->adiacentTriangles[side-1]!=nullptr)
+        {
+            //cout << "Triangolo adiacente" << endl;
+            //cout << *(bigTriangle->adiacentTriangles[side-1]) << endl;
+            //cout<<endl;
+        }
+
         vector<Triangle*> TriangoliPasto;
         if (bigTriangle->adiacentTriangles[side-1]!=nullptr)
         {
-            cout<<"Punto su un bordo interno"<<endl;
+            //cout<<"Punto su un bordo interno"<<endl;
             Triangle* adiacentTrPtr = bigTriangle->adiacentTriangles[side-1];
             Point* oppositPointPtr;
             int commonSidePos;
@@ -949,7 +1197,7 @@ namespace DelaunayLibrary
                 if (pt!=bigTriangle->vertices[side-1] && pt!=bigTriangle->vertices[side%3]){oppositPointPtr=&pt; commonSidePos=(i+1)%3; break;}
                 i++;
             }
-            cout<<"Punto a cui collegare di tr. adiacente"<<*oppositPointPtr<<endl;
+            //cout<<"Punto a cui collegare di tr. adiacente"<<*oppositPointPtr<<endl;
             //Creazione dei nuovi triangoli
             Triangle* triangle1 = new Triangle(bigTriangle->vertices[side-1], bigTriangle->vertices[(side+1)%3], point);
             Triangle* triangle2 = new Triangle(bigTriangle->vertices[side%3], bigTriangle->vertices[(side+1)%3], point);
@@ -971,6 +1219,15 @@ namespace DelaunayLibrary
             Triangle::SetAdiacentTriangle(*triangle1, triangle3, bigTriangle->vertices[side-1], point);
             Triangle::SetAdiacentTriangle(*triangle2, triangle4, point, bigTriangle->vertices[side%3]);
             //Aggiunta triangoli a leaf mesh (?)
+            //cout<<"TriangoliAdiacenti****************************************************" <<endl;
+//            for (int i = 0; i<3; i++)
+//             {
+//                if (triangle1->adiacentTriangles[i] != nullptr)
+//                {
+//                    cout<<*(triangle1->adiacentTriangles[i])<<endl;
+//                }
+//             }
+//            cout<<"***********************************************************************"<<endl;
             TriangoliPasto.push_back(triangle1);
             TriangoliPasto.push_back(triangle2);
             TriangoliPasto.push_back(triangle3);
@@ -982,7 +1239,7 @@ namespace DelaunayLibrary
         //Se il punto è su un lato del ConvexHull
         else
         {
-            cout<<"Punto sul bordo della mesh"<<endl;
+            //cout<<"Punto sul bordo della mesh"<<endl;
             //Creazione dei nuovi triangoli
             Triangle* triangle1 = new Triangle(bigTriangle->vertices[side-1], bigTriangle->vertices[(side+1)%3], point);
             Triangle* triangle2 = new Triangle(bigTriangle->vertices[side%3], bigTriangle->vertices[(side+1)%3], point);
@@ -993,7 +1250,23 @@ namespace DelaunayLibrary
             Triangle::SetAdiacentTriangle(*triangle1, bigTriangle->adiacentTriangles[(side+1)%3], bigTriangle->vertices[(side+1)%3], bigTriangle->vertices[side-1]);
             Triangle::SetAdiacentTriangle(*triangle2, bigTriangle->adiacentTriangles[side%3], bigTriangle->vertices[side%3], bigTriangle->vertices[(side+1)%3]);
             Triangle::SetAdiacentTriangle(*triangle1, triangle2, point, bigTriangle->vertices[(side+1)%3]);
+
             //Aggiornamento convexHull
+            convexHullElem* elemHead = convexHull->next;
+            convexHullElem* elemTail = convexHull;
+            Point* tail = elemTail->hullPoint;
+            while (*tail!=(bigTriangle->vertices[side-1]))
+            {
+                elemTail = elemHead;
+                elemHead = elemHead->next;
+                tail = elemTail->hullPoint;
+            }
+            convexHullElem* newElem = new convexHullElem(point, *triangle1);
+            newElem->SetPrev(elemTail);
+            newElem->SetNext(elemHead);
+            elemHead->SetPrev(newElem);
+            elemTail->SetNext(newElem);
+            elemHead->SetTriangle(triangle2);
 
             //Aggiunta triangoli a leaf mesh (?)
             TriangoliPasto.push_back(triangle1);
@@ -1228,7 +1501,7 @@ namespace DelaunayLibrary
             vector<Point*> Del = Delaunay().getPointsVector();
             firstPoints = PickFourRandomPoints(Del);
         }
-        cout << "Zig-zagging algorithm worked well!" << endl;
+        //cout << "Zig-zagging algorithm worked well!" << endl;
         return firstPoints;
     }
 }
