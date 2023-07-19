@@ -195,9 +195,9 @@ namespace DelaunayLibrary
         }
         string line;
         getline(file, line);
-        for(int i=0; i<20; i++){
+//        for(int i=0; i<40; i++){
 //        while (!file.eof()){
-            getline(file, line);
+//            getline(file, line);
 //            int useless;
 //            double x;
 //            double y;
@@ -206,7 +206,7 @@ namespace DelaunayLibrary
 //            Point* point = new Point(x, y);
 //            // cout<<"Punto letto "<<i<<*point<<endl;
 //            pointsVector.push_back(point);
-//        while (getline(file, line)){
+        while (getline(file, line)){
             int useless;
             double x;
             double y;
@@ -421,7 +421,7 @@ namespace DelaunayLibrary
            {
                continue;
            }
-           array<int, 2> Output = Triangle::FindCommonEdge(*Triangle_new_1, *triangolo);
+           array<Point*,4> Output = Triangle::FindCommonEdge(*Triangle_new_1, *triangolo);
            for (int i=0; i<2; i++)
            {
                // cout << "Punti dei lati in comune" << endl;
@@ -450,45 +450,6 @@ namespace DelaunayLibrary
            }
 
         }
-    }
-
-
-    Delaunay::Delaunay(const string& inputFileName)
-    {
-        fileName = inputFileName;
-        ifstream file;
-        file.open(fileName);
-        if (file.fail()){
-            cerr << "Error while opening file" << endl;
-        }
-        string line;
-        getline(file, line);
-//        for(int i=0; i<40; i++){
-//        while (!file.eof()){
-//            getline(file, line);
-//            int useless;
-//            double x;
-//            double y;
-//            istringstream ss(line);
-//            ss >> useless >> x >> y;
-//            Point* point = new Point(x, y);
-//            // cout<<"Punto letto "<<i<<*point<<endl;
-//            pointsVector.push_back(point);
-        while (getline(file, line)){
-            int useless;
-            double x;
-            double y;
-            istringstream ss(line);
-            ss >> useless >> x >> y;
-            Point* point = new Point(x, y);
-            pointsVector.push_back(point);
-        }
-    }
-
-    array<Point,2> Point::OrederSide(Point& point1, Point& point2)
-    {
-        if (point1<point2){return {point1,point2};}
-        else {return {point2,point1};}
     }
 
     void Delaunay::Show()
@@ -674,7 +635,7 @@ namespace DelaunayLibrary
         Point* esterno1;
         Point* esterno2;
         Point* Lato[2];
-        array<Point*, 4> Output = Triangle::FindCommonEdge(Triangle1, Triangle2);
+        array<Point*, 4> Output = Triangle::FindCommonEdge(*Triangle1, *Triangle2);
         // cout<<"swag"<<endl;
         esterno1 = Output[2];
         esterno2 = Output[3];
@@ -702,8 +663,8 @@ namespace DelaunayLibrary
 //        cout<<"***********************************************************************"<<endl;
 //        cout<< "TRIANGOLO 2" << endl;
 //        cout << Triangle2 << endl;
-        Triangle::adjourn(Triangle_new_1, &Triangle1, &Triangle2);
-        Triangle::adjourn(Triangle_new_1, &Triangle2, &Triangle1);
+        Triangle::adjourn(Triangle_new_1, Triangle1, Triangle2);
+        Triangle::adjourn(Triangle_new_1, Triangle2, Triangle1);
 //        cout << "fine aggiornamento" << endl;
 //        cout<<"TriangoliAdiacenti TRIANGLE_NEW_1 dopo processo****************************************************" <<endl;
 //        for (int i = 0; i<3; i++)
@@ -715,8 +676,8 @@ namespace DelaunayLibrary
 //         }
 //        cout<<"***********************************************************************"<<endl;
         //cout << "ok" << endl;
-        Triangle::adjourn(Triangle_new_2, &Triangle2, &Triangle1);
-        Triangle::adjourn(Triangle_new_2, &Triangle1, &Triangle2);
+        Triangle::adjourn(Triangle_new_2, Triangle2, Triangle1);
+        Triangle::adjourn(Triangle_new_2, Triangle1, Triangle2);
         //cout<<"ADIACENZE TRAINGOLI DOPO FLIP ++++++++++++++++++++++++++++++++++++++++++" << endl;
         //cout << "Triangolo_new_1 \n" << *Triangle_new_1 << endl;
         //cout<<"TriangoliAdiacenti****************************************************" <<endl;
