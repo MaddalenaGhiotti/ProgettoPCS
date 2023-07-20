@@ -39,7 +39,7 @@ namespace DelaunayLibrary
                 {
                     //cout<<"Punto esterno"<<endl;
                     //cout<<"ext"<<endl;
-                    mesh.AddExternalPoint(*point);
+                    mesh.ernalPoint(*point);
                 }
                 else  //Punto interno o sul bordo
                 {
@@ -67,7 +67,7 @@ namespace DelaunayLibrary
             }
             //cout<<"------------------------------------------------------------------"<<endl;
             // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo guida a cui è interno)
-            // If interno AddInternalPoint, if external AddExternalPoint.
+            // If interno AddInternalPoint, if external ernalPoint.
         }
         //Da capire dentro o fuori!! ------------------
         MeshToEdges(mesh.guideTriangles);
@@ -89,20 +89,35 @@ namespace DelaunayLibrary
         //---------------------------------------------
     }
 
-//    void Mesh::DeleteConvexHull()
-//    {
+    void Mesh::DeleteConvexHull()
+    {
+        convexHullElem* elemHead = convexHull->next;
+        convexHullElem* elemTail = convexHull;
+        while (elemHead != nullptr)
+        {
+            delete elemTail;
+            elemTail = elemHead;
+            elemHead = elemHead->next;
+        }
+        delete elemTail;
+    }
 
-//    }
+    void Delaunay::DeleteTriangles(vector<Triangle*> trPtrVec)
+    {
+        for (Triangle* tr:trPtrVec)
+        {
+            if (!(tr->pointedTriangles.empty()))
+            {
+                DeleteTriangles(tr->pointedTriangles);
+            }
+            if (tr != nullptr){delete *tr;}
+        }
+    }
 
-//    void Mesh::DeleteTriangles()
-//    {
-//        for
-//    }
-
-//    void Delaunay::Delete()
-//    {
-
-//    }
+    void Delaunay::DeletePoints()
+    {
+        for (Point* pointPtr:pointsVector){delete *pointPtr;}
+    }
 
     //Restituisce 1 se il punto è interno alla mesh o 0 se è esterno
     int Mesh::CheckInside(Point point)
@@ -113,13 +128,16 @@ namespace DelaunayLibrary
         Point* tail = elemTail->hullPoint;
         double d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
         //cout<<"Prod vett. primo coso: "<<d<<endl;
-        while (elemHead!=convexHull && d>0)
+        int count =0;
+        if (d==0){count = 1;}
+        while (elemHead!=convexHull && d>=0)
         {
             elemTail = elemHead;
             elemHead = elemHead->next;
             head = elemHead->hullPoint;
             tail = elemTail->hullPoint;
-            d = d*((point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y));
+            d =((point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y));
+            if (d==0){count++;}
             //cout<<"Prod vett.: "<<d<<endl;
         }
         if (d>=0){return 1;}
@@ -454,7 +472,8 @@ namespace DelaunayLibrary
             Point* point = new Point(x*100.0, y*100.0);
             pointsVector.push_back(point);
         }
-        //pointsVector.erase(unique(pointsVector.begin(), pointsVector.end()), pointsVector.end());
+        sort(pointsVector.begin(), pointsVector.end(),PointerCompare());
+        pointsVector = pointsVector.erase(unique(pointsVector.begin(), pointsVector.end(),PointerCompare()), pointsVector.end());
     }
 
 
@@ -807,7 +826,7 @@ namespace DelaunayLibrary
     }
 
 
-    void Mesh::AddExternalPoint(Point& point)
+    void Mesh::ernalPoint(Point& point)
     {
         vector<Triangle*> newTriangles;
         convexHullElem* newElem;

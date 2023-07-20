@@ -33,6 +33,15 @@ namespace DelaunayLibrary
         return os;
     }
 
+    struct PointerCompare {
+        bool operator()(const Point* point1, const Point* point2) const {
+            return *point1 == *point2;
+        }
+    };
+
+    //bool operator==(const Point* pointPtr1, const Point* pointPtr2){return *pointPtr1==*pointPtr2;}
+    //bool operator<(const Point* pointPtr1, const Point* pointPtr2){return *pointPtr1<pointPtr2;}
+
     void reorderPointsCounterclockwiseTr(Point& p1, Point& p2, Point& p3);
     void reorderPointsCounterclockwiseQ(Point& p1, Point& p2, Point& p3, Point& p4);
     double determinante(double& a11, double& a12, double& a13, double& a21, double& a22, double& a23, double& a31, double& a32, double& a33);
