@@ -31,11 +31,15 @@ namespace DelaunayLibrary
         bool flag=false;
         for (Point* point : pointsVector)
         {
+            cout << "Punto che consideriamo------------------------------------" << endl;
+            cout << *point << endl;
+            cout << "----------------------------------------------------------" << endl;
 //            cout<<"Punto da aggiungere: "<<*point;
             if (*point!=firstPoints[0] && *point!=firstPoints[1] && *point!=firstPoints[2] && (*point!=firstPoints[3] || flag == false))
             {
                 flag = true;
                 int pos = mesh.CheckInside(*point);
+                cout << "La posizione in cui è il mio punto è " << pos << endl;
                 if (pos==0) //Punto esterno
                 {
                     //cout<<"Punto esterno"<<endl;
@@ -114,16 +118,16 @@ namespace DelaunayLibrary
         Point* tail = elemTail->hullPoint;
         double d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
         //cout<<"Prod vett. primo coso: "<<d<<endl;
-        while (elemHead!=convexHull && d>0)
+        while (elemHead!=convexHull && d>=-TOL)
         {
             elemTail = elemHead;
             elemHead = elemHead->next;
             head = elemHead->hullPoint;
             tail = elemTail->hullPoint;
-            d = d*((point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y));
+            d = ((point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y));
             //cout<<"Prod vett.: "<<d<<endl;
         }
-        if (d>=0){return 1;}
+        if (d>=-TOL){return 1;}
         return 0;
     }
 
@@ -135,6 +139,7 @@ namespace DelaunayLibrary
 
 //      }
 //    }
+
     array<Point,2> Point::OrderSide(Point& point1, Point& point2)
     {
         if (point1<point2){return {point1,point2};}
@@ -147,9 +152,9 @@ namespace DelaunayLibrary
         {
             if (tr->pointedTriangles.empty())
             {
-                array<Point,2> side1 = Point::OrederSide(tr->vertices[0], tr->vertices[1]);
-                array<Point,2> side2 = Point::OrederSide(tr->vertices[1], tr->vertices[2]);
-                array<Point,2> side3 = Point::OrederSide(tr->vertices[2], tr->vertices[0]);
+                array<Point,2> side1 = Point::OrderSide(tr->vertices[0], tr->vertices[1]);
+                array<Point,2> side2 = Point::OrderSide(tr->vertices[1], tr->vertices[2]);
+                array<Point,2> side3 = Point::OrderSide(tr->vertices[2], tr->vertices[0]);
                 //Aggiungere lati al vector finale
                 finalEdges.push_back(side1);
                 finalEdges.push_back(side2);
@@ -163,20 +168,23 @@ namespace DelaunayLibrary
 
     void Delaunay::OutputEdges()
     {
-        fileName = "outputEdges";
+        fileName = "outputEdges_Geogebra";
         ofstream file;
         file.open(fileName);
         if (file.fail()){
             cerr << "Error while opening file" << endl;
         }
+        file<<"PUNTI"<<endl;
+        string fileStringPoints = "{";
+        for (Point* point:pointsVector){fileStringPoints+=("("+to_string((point->x)/100)+","+to_string((point->y)/100)+"),");}
+        fileStringPoints = fileStringPoints.substr(0,fileStringPoints.length()-1)+"}";
+        file<<fileStringPoints<<endl;
+        file<<endl;
+        file<<"LATI"<<endl;
         string fileString = "{";
-        for (array<Point,2> side:finalEdges){fileString+=("Segmento(("+to_string(side[0].x)+","+to_string(side[0].y)+"),("+to_string(side[1].x)+","+to_string(side[1].y)+")),");}
+        for (array<Point,2> side:finalEdges){fileString+=("Segmento(("+to_string((side[0].x)/100)+","+to_string((side[0].y)/100)+"),("+to_string((side[1].x)/100)+","+to_string((side[1].y)/100)+")),");}
         fileString = fileString.substr(0,fileString.length()-1)+"}";
         file<<fileString<<endl;
-        string fileStringPoints = "{";
-        for (Point* point:pointsVector){fileStringPoints+=("("+to_string(point->x)+","+to_string(point->y)+"),");}
-        fileStringPoints = fileStringPoints.substr(0,fileStringPoints.length()-1)+"}";
-        file<<fileStringPoints;
     }
 
     Triangle::Triangle(Point& p1, Point& p2, Point& p3)
@@ -187,31 +195,30 @@ namespace DelaunayLibrary
         adiacentTriangles = {nullptr, nullptr, nullptr};
     }
 
-//Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
-//mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
+    //Metodo che restituisce 0 se il punto in input è interno al triangolo, -1 se è esterno,
+    //mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
     int Triangle::ContainsPoint(Point& point)
     {
-        double tol = 0.0000001;
         double prod1 = (point.x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (point.y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
         double prod2 = (point.x - vertices[2].x) * (vertices[1].y - vertices[2].y) - (vertices[1].x - vertices[2].x) * (point.y - vertices[2].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e secondo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
         double prod3 = (point.x - vertices[0].x) * (vertices[2].y - vertices[0].y) - (vertices[2].x - vertices[0].x) * (point.y - vertices[0].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e terzo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
         cout<<prod1<<endl;
         cout<<prod2<<endl;
         cout<<prod3<<endl;
-        if (prod1>tol && prod2>tol && prod3>tol) //Il punto si trova a destra di tutti i lati o a sinistra di tutti i lati (interno)
+        if (prod1>TOL && prod2>TOL && prod3>TOL) //Il punto si trova a destra di tutti i lati o a sinistra di tutti i lati (interno)
         {
             cout << "Il punto è interno" << endl;
             return 0;
         }
-        if (prod1<-tol || prod2<-tol || prod3<-tol)
+        if (prod1<-TOL || prod2<-TOL || prod3<-TOL)
         {
             cout << "Il punto si trova a destra di almeno un lato e a sinistra di almeno un lato (esterno)" << endl;
             return -1;
         }
 
-        if (abs(prod1)<tol) //Il punto si trova sul primo lato (assumiamo non possano esserci punti sovrapposti)
+        if (abs(prod1)<TOL) //Il punto si trova sul primo lato (assumiamo non possano esserci punti sovrapposti)
             return 1;
-        if (abs(prod2)<tol) //Il punto si trova sul secondo lato
+        if (abs(prod2)<TOL) //Il punto si trova sul secondo lato
             return 2;
         return 3; //Per esclusione il punto si trova sul terzo lato
     }
@@ -244,17 +251,17 @@ namespace DelaunayLibrary
     }
 
     void Triangle::SetAdiacentTriangle(Triangle& existingTriangle, Triangle* addingTriangle, Point& tail, Point& head) //head e tail sono la testa e la coda del vettore visto come lato del triangolo già esistente ordiato in senso antiorario.
-        {
-            //Settare triangolo adiacente a triangolo già esistente
-            if (existingTriangle.vertices[0] == tail){existingTriangle.adiacentTriangles[0] = addingTriangle;}
-            else if (existingTriangle.vertices[1] == tail){existingTriangle.adiacentTriangles[1] = addingTriangle;}
-            else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
-            //Settare triangolo adiacente a triangolo aggiunto
-            if (addingTriangle!=nullptr){
-                if (addingTriangle->vertices[0] == head){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
-                else if (addingTriangle->vertices[1] == head){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
-                else {addingTriangle->adiacentTriangles[2] = &existingTriangle;}}
-        }
+    {
+        //Settare triangolo adiacente a triangolo già esistente
+        if (existingTriangle.vertices[0] == tail){existingTriangle.adiacentTriangles[0] = addingTriangle;}
+        else if (existingTriangle.vertices[1] == tail){existingTriangle.adiacentTriangles[1] = addingTriangle;}
+        else {existingTriangle.adiacentTriangles[2] = addingTriangle;}
+        //Settare triangolo adiacente a triangolo aggiunto
+        if (addingTriangle!=nullptr){
+            if (addingTriangle->vertices[0] == head){addingTriangle->adiacentTriangles[0] = &existingTriangle;}
+            else if (addingTriangle->vertices[1] == head){addingTriangle->adiacentTriangles[1] = &existingTriangle;}
+            else {addingTriangle->adiacentTriangles[2] = &existingTriangle;}}
+    }
 
     // dati due triangoli e due punti che sono ad essi comuni (in un ordine non necessariamente specificato), aggiorna l'array di
     // adiacenze in senso ordinato
@@ -332,7 +339,6 @@ namespace DelaunayLibrary
     // se i due triangoli non presentano punti in comune, restituisce semplicemente un array di nullptr
     array<Point*,4> Triangle::FindCommonEdge(Triangle& triangle1, Triangle& triangle2)
     {
-
         array<int, 2> posOpp = {-1,-1};  //Posizione 0: Opposto in tr1; Posizione 1: Opposto in tr2
 
         for (int i=0; i<3; i++)
@@ -353,18 +359,20 @@ namespace DelaunayLibrary
            }
            if (found == true){posOpp[1]=i; break;}
         }
+
         int opp1 = posOpp[0];
         int opp2 = posOpp[1];
-        array<Point*,4> Output = {nullptr,nullptr,nullptr,nullptr};
+        array<Point*,4> output = {nullptr,nullptr,nullptr,nullptr};
         if ((triangle1.vertices[(opp1+1)%3] == triangle2.vertices[(opp2+2)%3]) && (triangle1.vertices[(opp1+2)%3] == triangle2.vertices[(opp2+1)%3]))
         {
-            Output[0] = &(triangle1.vertices[(opp1+1)%3]);
-            Output[1] = &(triangle1.vertices[(opp1+2)%3]);
-            Output[2] = &(triangle1.vertices[opp1]);
-            Output[3] = &(triangle2.vertices[opp2]);
+            output[0] = &(triangle1.vertices[(opp1+1)%3]);
+            output[1] = &(triangle1.vertices[(opp1+2)%3]);
+            output[2] = &(triangle1.vertices[opp1]);
+            output[3] = &(triangle2.vertices[opp2]);
         }
-        return Output;
+        return output;
     }
+
     // aggiorna le adiacenze del nuovo triangolo formatosi in seguito al flip grazie alle liste di adiacenza dei due vecchi
     // triangoli Triangle1 e Triangle2
     void Triangle::adjourn(Triangle* Triangle_new_1, Triangle* Triangle1, Triangle* Triangle2)
@@ -389,7 +397,7 @@ namespace DelaunayLibrary
            {
                continue;
            }
-           array<Point*, 4> Output = Triangle::FindCommonEdge(*Triangle_new_1, *triangolo);
+           array<Point*,4> Output = Triangle::FindCommonEdge(*Triangle_new_1, *triangolo);
            for (int i=0; i<2; i++)
            {
                // cout << "Punti dei lati in comune" << endl;
@@ -447,17 +455,10 @@ namespace DelaunayLibrary
             double y;
             istringstream ss(line);
             ss >> useless >> x >> y;
-            x = x*100;
-            y = y*100;
-            Point* point = new Point(x, y);
+            Point* point = new Point(x*100.0, y*100.0);
             pointsVector.push_back(point);
         }
-    }
-
-    array<Point,2> Point::OrederSide(Point& point1, Point& point2)
-    {
-        if (point1<point2){return {point1,point2};}
-        else {return {point2,point1};}
+        //pointsVector.erase(unique(pointsVector.begin(), pointsVector.end()), pointsVector.end());
     }
 
 
@@ -641,7 +642,6 @@ namespace DelaunayLibrary
     // dei due triangoli a partire dai quali si è originato il flip;
     array<Triangle*, 2> Triangle::Flip(Triangle& Triangle1, Triangle& Triangle2)
     {
-
         Point* esterno1;
         Point* esterno2;
         Point* Lato[2];
@@ -813,6 +813,7 @@ namespace DelaunayLibrary
 
     void Mesh::AddExternalPoint(Point& point)
     {
+        cout << "Il punto è esterno" << endl;
         vector<Triangle*> newTriangles;
         convexHullElem* newElem;
 
@@ -825,12 +826,12 @@ namespace DelaunayLibrary
         //cout<<*head;
 
         double d = (point.x - head->x) * (tail->y - head->y) - (tail->x - head->x) * (point.y - head->y);  //Formula che restituisce un numero positivo se il punto si trova a sinistra del lato, negativo se si trova a destra.
-
+        cout << "Il prodotto vettoriale è " << d << endl;
         //SE IL PRIMO LATO NON E' DA COLLEGARE
-        if (d>=0)
+        if (d>=-TOL)
         {
             //Inizio a girare in senso antiorario
-            while (d>=0)
+            while (d>=-TOL)
             //for(int i=0; i<2; i++)
             {
                 elemTail = elemHead;
@@ -997,7 +998,7 @@ namespace DelaunayLibrary
 //                meshTriangles.push_back(newGuideTriangle);
                 guideTriangles.push_back(newGuideTriangle);
                 //Aggiornamento adiacenze
-                Point* midPoint = new Point(abs((tail->x)+(head->x))/2,abs((tail->y)+(head->y))/2);
+                Point* midPoint = new Point(((tail->x)+(head->x))/2,((tail->y)+(head->y))/2);
                 Triangle* lastTrPtr = (elemHead->externalTriangle)->FromRootToLeaf(*midPoint);
                 array<Point*, 4> Output_giusto = Triangle::FindCommonEdge(*lastTrPtr, *newGuideTriangle);
                 Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *Output_giusto[0], *Output_giusto[1]);
@@ -1021,7 +1022,7 @@ namespace DelaunayLibrary
             }
 
             //Aggiunta di un nuovo elemento nel convex hull
-            newElem = new convexHullElem(point, *newTriangles.back());
+            newElem = new convexHullElem(point, *newTriangles[0]);
             elemTail->SetPrev(newElem);
             newElem->SetNext(elemTail);
             elemTail->SetTriangle(newTriangles.back());
@@ -1056,6 +1057,13 @@ namespace DelaunayLibrary
                     array<Point*, 4> Output_3 = Triangle::FindCommonEdge(*newGuideTriangle, *(newTriangles.back()));
                     Triangle::SetAdiacentTriangle(*newGuideTriangle, newTriangles.back(), *Output_3[0], *Output_3[1]);
                 }
+                //Aggiornamento adiacenze
+                Point* midPoint = new Point(((tail->x)+(head->x))/2,((tail->y)+(head->y))/2);
+                Triangle* lastTrPtr = (elemHead->externalTriangle)->FromRootToLeaf(*midPoint);
+                array<Point*, 4> Output_giusto = Triangle::FindCommonEdge(*lastTrPtr, *newGuideTriangle);
+                Triangle::SetAdiacentTriangle(*lastTrPtr, newGuideTriangle, *Output_giusto[0], *Output_giusto[1]);
+                delete midPoint;
+
                 newTriangles.push_back(newGuideTriangle);
 //                meshTriangles.push_back(newGuideTriangle);
                 guideTriangles.push_back(newGuideTriangle);
@@ -1084,7 +1092,7 @@ namespace DelaunayLibrary
             newElem->SetPrev(elemHead);
             //newElem->SetTriangle(&newTriangles.back());
             SetConvexHull(newElem);
-            newElem->SetTriangle(newTriangles.back());
+            if (j!=0){newElem->SetTriangle(newTriangles.back());}
 
 //            //...DA ELIMINARE...
 //            convexHullElem* precedenteNewElem = newElem->prev;
@@ -1105,7 +1113,7 @@ namespace DelaunayLibrary
             cout << "Entra in un nuovo loop" << endl;
             cout << *tr << endl;
             if (tr->ContainsPoint(point)!=-1){cout<<"Pointed triangle\n"<<*tr<<endl; return tr->FromRootToLeaf(point);}
-            cout << "non contiene il PUNTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<< endl;
+            cout << "non contiene il PUNTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<< endl; //Madare messaggio di errore e stoppare il programma!!!
         }
         cerr << "Problemi di riconoscimento del triangolo a cui il punto è interno" << endl;
     }
