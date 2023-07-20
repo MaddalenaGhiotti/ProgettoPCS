@@ -53,7 +53,7 @@ namespace DelaunayLibrary
         static void SetAdiacentTriangleMod(Triangle* triangle1,Triangle* triangle2, Point* Punto1, Point* Punto2);
         static array<Point*,4> FindCommonEdge(Triangle& triangle1, Triangle& triangle2);
         // i primi due punti sono i punti del lato in comune, gli altri due sono i punti "esterni"
-        static array<Triangle*, 2> Flip(Triangle* Triangle1, Triangle* Triangle2);
+        static array<Triangle*, 2> Flip(Triangle& Triangle1, Triangle& Triangle2);
         // per flippare due triangoli
         static void adjourn(Triangle* triangle_new_1, Triangle* triangolo1, Triangle* triangolo2);
         static array<Point*, 2> findOrderedEdge(Triangle* triangle1, Point* Punto1, Point* Punto2);
