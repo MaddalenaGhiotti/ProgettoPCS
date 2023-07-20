@@ -5,8 +5,9 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <random>
 
-
+double TOL = 0.00000001;
 namespace DelaunayLibrary
 {
 //COME FOSSE IL NOSTRO MAIN
@@ -190,7 +191,7 @@ namespace DelaunayLibrary
 //mentre se giace su un lato del triangolo restituisce 1, 2 o 3 rispettivamente se giace sul lato tra i primi due vertivi, tra i secondi due o tra il primo e l'ultimo.
     int Triangle::ContainsPoint(Point& point)
     {
-        double tol = 0.0000000000000001;
+        double tol = 0.0000001;
         double prod1 = (point.x - vertices[1].x) * (vertices[0].y - vertices[1].y) - (vertices[0].x - vertices[1].x) * (point.y - vertices[1].y);  //Formula che restituisce un numero positivo se il punto si trova a destra del primo lato, negativo se si trova a sinistra.
         double prod2 = (point.x - vertices[2].x) * (vertices[1].y - vertices[2].y) - (vertices[1].x - vertices[2].x) * (point.y - vertices[2].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e secondo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
         double prod3 = (point.x - vertices[0].x) * (vertices[2].y - vertices[0].y) - (vertices[2].x - vertices[0].x) * (point.y - vertices[0].y); //Prodotto positivo se il punto si trova a destra di entrambi primo e terzo lato o a sinistra di entrambi. E' negativo se si trova a destra di uno e a sinistra dell'altro (quindi esterno al triangolo)
@@ -446,6 +447,8 @@ namespace DelaunayLibrary
             double y;
             istringstream ss(line);
             ss >> useless >> x >> y;
+            x = x*100;
+            y = y*100;
             Point* point = new Point(x, y);
             pointsVector.push_back(point);
         }
@@ -848,15 +851,15 @@ namespace DelaunayLibrary
             //Aggiornamento adiacenze
 
             //Stampa punti convex hull
-//            cout<<"\nELEMENTI NUOVO CONVEX HULL\n"<<endl;
-//            convexHullElem* currentElem2 = convexHull;
-//            for (int i=0; i<20; i++)
-//            {
-//                cout<<*(currentElem2->hullPoint);
-//                cout<<*(currentElem2->externalTriangle);
-//                currentElem2 = currentElem2->next;
-//            }
-//            cout<<"------------------------------------------------------------------"<<endl;
+            cout<<"\nELEMENTI CONVEX HULL@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"<<endl;
+            convexHullElem* currentElem2 = convexHull;
+            for (int i=0; i<20; i++)
+            {
+                cout<<*(currentElem2->hullPoint);
+                cout<<*(currentElem2->externalTriangle);
+                currentElem2 = currentElem2->next;
+            }
+            cout<<"------------------------------------------------------------------"<<endl;
 
             Point* midPoint = new Point(((tail->x)+(head->x))/2,((tail->y)+(head->y))/2);
             cout<<"Punto medio\n"<<*midPoint<<endl;
@@ -924,7 +927,7 @@ namespace DelaunayLibrary
             //cout<<d<<endl<<endl;
 
             //Continuo a girare in senso antiorario
-            while (d<0)
+            while (d<-TOL)
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
@@ -981,7 +984,7 @@ namespace DelaunayLibrary
         {
             int i=0;
             //Inizio a girare in senso antiorario
-            while (d<0)
+            while (d<-TOL)
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
@@ -1039,7 +1042,7 @@ namespace DelaunayLibrary
 
             //Inizio a girare in senso orario
             int j = 0;
-            while (d<0)
+            while (d<-TOL)
             {
                 //Aggiunta del nuovo triangolo
                 Triangle* newGuideTriangle = new Triangle(point, *head, *tail);
@@ -1104,6 +1107,7 @@ namespace DelaunayLibrary
             if (tr->ContainsPoint(point)!=-1){cout<<"Pointed triangle\n"<<*tr<<endl; return tr->FromRootToLeaf(point);}
             cout << "non contiene il PUNTO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<< endl;
         }
+        cerr << "Problemi di riconoscimento del triangolo a cui il punto è interno" << endl;
     }
 
     void Mesh::AddInternalPoint(Point& point, Triangle* bigTriangle)
@@ -1274,6 +1278,10 @@ namespace DelaunayLibrary
             }
         }
         //rectangles = rectanglesLocal;
+        for (unsigned int i = 0; i < points.size(); i++)
+        {
+            PointsGrid.push_back(points[i]);
+        }
     }
 
 
@@ -1316,13 +1324,27 @@ namespace DelaunayLibrary
 
     array<Point, 4> Grid::PickFourRandomPoints(vector<Point*> points)
     {
+        cout << "Entro in PickFour" << endl;
         array<Point, 4> result;
-        vector<Point*> shuffledPoints = points;
-        random_shuffle(shuffledPoints.begin(), shuffledPoints.end());
-        for (int i = 0; i < 4; ++i)
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(points.begin(), points.end(), g);
+        double prod1 = 0;
+        while (abs(prod1) <= TOL)
         {
-            result[i] = *shuffledPoints[i];
+            std::shuffle(points.begin(), points.end(), g);
+            cout << "Entro nel ciclo interno del while" << endl;
+            prod1 = (points[2]->x - points[1]->x) * (points[0]->y - points[1]->y) - (points[0]->x - points[1]->x) * (points[2]->y - points[1]->y);  //Formula che mi restituisce zero se il point è allineato ai primi due punti
+            cout << prod1 << endl;
         }
+        result[0] = *points[0];
+        result[1] = *points[1];
+        result[2] = *points[2];
+        result[3] = *points[3];
+        cout << result[0] << endl;
+        cout << result[1] << endl;
+        cout << result[2] << endl;
+        cout << result[3] << endl;
         return result;
     }
 
@@ -1330,10 +1352,11 @@ namespace DelaunayLibrary
     {
         array<Point, 4> firstPoints;
         array<Rectangle, 3> chosenRectangles;
-        string flag = "well";
-        // primo punto (in alto a sx)
-        bool foundRectangle = false; // Variable to track if the condition is satisfied
+        bool foundRectangle = false; // Variable to track, for each corner, if a rectangle has been found
+        bool rectanglesCollapsed = false; // Variable to track if the method reached an already found rectangle
+        bool alignedPoints = false; // Variable to track if the method selected 3 aligned points as the first 3 points
 
+        // primo punto (in alto a sx)
         for (int sum = 0; sum < intNum; sum++)
         {
             int i = sum;
@@ -1369,7 +1392,7 @@ namespace DelaunayLibrary
             {
                 if (rectangles(i,j) == chosenRectangles[0])
                 {
-                    flag = "bad";
+                    rectanglesCollapsed = true;
                     break;
                 }
                 if ((rectangles(i, j).containedPoints).empty() == false)
@@ -1385,7 +1408,7 @@ namespace DelaunayLibrary
                 }
             }
 
-            if (foundRectangle || flag == "bad")
+            if (foundRectangle || rectanglesCollapsed == true)
             {
                 break; // Breaks out of the outer loop as well
             }
@@ -1393,7 +1416,8 @@ namespace DelaunayLibrary
         //cout << firstPoints[1];
 
         // primo punto (in alto a dx)
-        if (flag != "bad")
+        //cout << rectanglesCollapsed << endl;
+        if (rectanglesCollapsed == false)
         {
             foundRectangle = false; // Variable to track if the condition is satisfied
 
@@ -1404,15 +1428,25 @@ namespace DelaunayLibrary
                 {
                     if (rectangles(i,j) == chosenRectangles[0] || rectangles(i,j) == chosenRectangles[1])
                     {
-                        flag = "bad";
+                        rectanglesCollapsed = true;
                         break;
                     }
                     if ((rectangles(i, j).containedPoints).empty() == false)
                     {
                         chosenRectangles[2] = rectangles(i, j);
-                        firstPoints[2] = rectangles(i, j).containedPoints[0];
-                        foundRectangle = true;
-                        break; // Breaks out of the inner loop
+                        Point point = rectangles(i, j).containedPoints[0];
+                        double prod1 = (point.x - firstPoints[1].x) * (firstPoints[0].y - firstPoints[1].y) - (firstPoints[0].x - firstPoints[1].x) * (point.y - firstPoints[1].y);  //Formula che mi restituisce zero se il point è allineato ai primi due punti
+                        if (abs(prod1) <= TOL)
+                        {
+                            alignedPoints = true;
+                            break;
+                        }
+                        else
+                        {
+                            firstPoints[2] = point;
+                            foundRectangle = true;
+                            break; // Breaks out of the inner loop
+                        }
                     }
                     if (i > 0)
                     {
@@ -1420,7 +1454,7 @@ namespace DelaunayLibrary
                     }
                 }
 
-                if (foundRectangle || flag == "bad")
+                if (foundRectangle || rectanglesCollapsed == true || alignedPoints == true)
                 {
                     break; // Breaks out of the outer loop as well
                 }
@@ -1430,7 +1464,7 @@ namespace DelaunayLibrary
 
 
         // primo punto (in basso a dx)
-        if (flag != "bad")
+        if (rectanglesCollapsed == false && alignedPoints == false)
         {
             foundRectangle = false; // Variable to track if the condition is satisfied
             for (int sum = intNum - 1; sum >= 0; sum--)
@@ -1440,7 +1474,7 @@ namespace DelaunayLibrary
                 {
                     if (rectangles(i,j) == chosenRectangles[0] || rectangles(i,j) == chosenRectangles[1] || rectangles(i,j) == chosenRectangles[2])
                     {
-                       flag = "bad";
+                       rectanglesCollapsed = true;
                        break;
                     }
                     //cout << flag;
@@ -1455,7 +1489,7 @@ namespace DelaunayLibrary
                         i++;
                     }
                 }
-                if (foundRectangle || flag == "bad")
+                if (foundRectangle || rectanglesCollapsed == true)
                 {
                     break; // Breaks out of the outer loop as well
                 }
@@ -1463,13 +1497,21 @@ namespace DelaunayLibrary
         }
         //cout << firstPoints[3];
 
-        if (flag == "bad")
+        if (rectanglesCollapsed == true)
         {
-            cerr << "Zig-zagging algorithm didn't work well! We will then select the first points randomly!";
-            vector<Point*> Del = Delaunay().getPointsVector();
-            firstPoints = PickFourRandomPoints(Del);
+            cerr << "Snake method reached twice the same rectangle! We will then select the first points randomly";
+            return PickFourRandomPoints(PointsGrid);
         }
-        //cout << "Zig-zagging algorithm worked well!" << endl;
+        else if (alignedPoints == true)
+        {
+            cerr << "Snake method selected 3 aligned points as the first 3 points! We will then select the first points randomly";
+            return PickFourRandomPoints(PointsGrid);
+        }
+        cout << "Snake method worked well!" << endl;
+        cout << firstPoints[0] << endl;
+        cout << firstPoints[1] << endl;
+        cout << firstPoints[2] << endl;
+        cout << firstPoints[3] << endl;
         return firstPoints;
     }
 }

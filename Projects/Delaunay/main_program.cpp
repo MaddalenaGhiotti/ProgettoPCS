@@ -1,4 +1,4 @@
-
+//Versione più aggiornata
 //MAIN CHE SERVE A NOI PER FARE DELLE PROVE, ES. STAMPARE A SCHERMO
 #include "empty_class.hpp"
 #include <iostream>
@@ -11,7 +11,7 @@ int main()
 //_______________________________________________________________________________________________________________________
 //GENERALE
 
-    string inputFile = "Test3.csv";
+    string inputFile = "TestAldo1.csv";
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
     delaunay.ExecuteDelaunay();

@@ -106,6 +106,7 @@ namespace DelaunayLibrary
         //Altezza rettangolo e larghezza rettangolo
         int intNum;
         Eigen::Matrix<Rectangle, Eigen::Dynamic, Eigen::Dynamic> rectangles;
+        vector<Point*> PointsGrid;
         double x_min;
         double y_min;
         double intervalX;
