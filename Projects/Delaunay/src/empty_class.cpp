@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <random>
 
-double TOL = 0.00000001;
+double TOL = 0.00000000001;
 namespace DelaunayLibrary
 {
 //COME FOSSE IL NOSTRO MAIN
