@@ -83,6 +83,8 @@ namespace DelaunayLibrary
         void MeshToEdges(vector<Triangle*> guideTriangles);
         void OutputEdges();
         vector<Point*> getPointsVector(){return pointsVector;}
+        void FromGraphToTree(vector<Triangle*>& trPtrVec);
+        void DeleteTriangles(vector<Triangle*>& trPtrVec);
     };
 
     class Rectangle
@@ -158,6 +160,7 @@ namespace DelaunayLibrary
         void AddSidePoint(Point& point, Triangle* bigTriangle, int side);
         void SetConvexHull(convexHullElem* elem) {convexHull=elem;}
         int CheckInside(Point point);
+        void DeleteConvexHull();
     };
 }
 

@@ -10,104 +10,129 @@
 double TOL = 0.00000000001;
 namespace DelaunayLibrary
 {
-//COME FOSSE IL NOSTRO MAIN
+//Metodo che, a partire dal set di punti mi restituisce i lati della triangolazione di Delaunay
     void Delaunay::ExecuteDelaunay()
     {
-        Grid grid = Grid(pointsVector); //Costruzione griglia
-        grid.PointsInRectangle(pointsVector);  //Aggiunge ad ogni punto il rettangolo a cui è interno e ad ogni rettangolo il vector dei punti a cui è interno. (Valutare se fondere con costruttore griglia)
-        array<Point, 4> firstPoints = grid.Snake();  //Restituisce 4 punti di cui i primi 3 sono il triangolone iniziale (Attenzione a punti allineati, stesso punto, ecc.)
-//        cout << firstPoints[0];
-//        cout << firstPoints[1];
-//        cout << firstPoints[2];
-//        cout << firstPoints[3];
-
+        //Costruzione griglia
+        Grid grid = Grid(pointsVector);
+        grid.PointsInRectangle(pointsVector);
+        //Identificazione 4 punti iniziali
+        array<Point, 4> firstPoints = grid.Snake();
+        //Costruzione della mesh
         Triangle* firstTriangle = new Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
-
         Mesh mesh = Mesh(*firstTriangle);
+        //Mescolamento dell'ordine dei punti, ad eccezione dei primi 4
         //random_shuffle(pointsVector.begin(), pointsVector.end());
-
         pointsVector.insert(pointsVector.begin(),&firstPoints[3]);
 
+        //AGGIUNTA PUNTI ALLA MESH
         bool flag=false;
         for (Point* point : pointsVector)
         {
-            cout << "Punto che consideriamo------------------------------------" << endl;
-            cout << *point << endl;
-            cout << "----------------------------------------------------------" << endl;
-//            cout<<"Punto da aggiungere: "<<*point;
+            //Considero tutti i punti che non siano i primi 4 identificati
             if (*point!=firstPoints[0] && *point!=firstPoints[1] && *point!=firstPoints[2] && (*point!=firstPoints[3] || flag == false))
             {
                 flag = true;
+                //Controllo se il nuovo punto è interno o esterno
                 int pos = mesh.CheckInside(*point);
-                cout << "La posizione in cui è il mio punto è " << pos << endl;
-                if (pos==0) //Punto esterno
+                //Caso punto esterno
+                if (pos==0){mesh.AddExternalPoint(*point);}
+                //Caso punto interno o sul bordo
+                else
                 {
-                    //cout<<"Punto esterno"<<endl;
-                    //cout<<"ext"<<endl;
-                    mesh.AddExternalPoint(*point);
-                }
-                else  //Punto interno o sul bordo
-                {
-                    //cout<<"Punto interno o sul bordo"<<endl;
-                    //cout<<"int"<<endl;
-                    //DA ELIMINARE (non tutto) --------
+                    //Identifico il triangolo radice dentro cui si trova il punto
                     for (Triangle* trPtr:mesh.guideTriangles)
                     {
                         if ((trPtr->ContainsPoint(*point))!=-1)
                         {
-                            //cout << *trPtr << endl;
+                            //Identifico il triangolo foglia dentro cui si trova il punto
                             Triangle* bigTrianglePtr = trPtr->FromRootToLeaf(*point);
-                            //cout << *bigTrianglePtr << endl;
                             int posTr = bigTrianglePtr->ContainsPoint(*point);
+                            //Caso in cui il punto sia interno al triangolo
                             if (posTr==0){mesh.AddInternalPoint(*point, bigTrianglePtr);}
+                            //Caso in cui il punto sia sul bordo del triangolo
                             else {mesh.AddSidePoint(*point, bigTrianglePtr, posTr);}
                             break;
                         }
                     }
-                    //---------------------------------
 
                 }
-                //cout<<"Punto aggiunto"<<endl;
-                //cout<<endl;
+                cout<<"Punto aggiunto: "<<*point;
             }
-            //cout<<"------------------------------------------------------------------"<<endl;
-            // (crossing Triangle) Controllare se il punto è esterno o interno (e in tal caso identificare il triangolo guida a cui è interno)
-            // If interno AddInternalPoint, if external AddExternalPoint.
         }
-        //Da capire dentro o fuori!! ------------------
+        //Identificazione dei lati della triangolazione e stampa a schermo
         MeshToEdges(mesh.guideTriangles);
-        //Stampa output e caricameno su file
+        cout<<"LATI DELLA TRIANGOLAZIONE\n"<<endl;
         for (array<Point,2> side:finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
-        OutputEdges();
         cout<<"Numero totale di lati: "<<finalEdges.size()<<endl;
-        //Stampa punti convex hull
-        cout<<"\nELEMENTI NUOVO CONVEX HULL\n"<<endl;
-        convexHullElem* currentElem2 = mesh.convexHull;
-        for (int i=0; i<20; i++)
-        {
-            cout<<*(currentElem2->hullPoint);
-            cout<<*(currentElem2->externalTriangle);
-            currentElem2 = currentElem2->next;
-        }
-        cout<<"------------------------------------------------------------------"<<endl;
-        //ELIMINARE OGGETTI DALLA MEMORIA!!
-        //---------------------------------------------
+        //Caricamento dei risultati su file
+        OutputEdges();
+
+        //Eliminazione oggetti in memoria
+        mesh.DeleteConvexHull();
+        FromGraphToTree(mesh.guideTriangles);
+        DeleteTriangles(mesh.guideTriangles);
     }
 
-//    void Mesh::DeleteConvexHull()
-//    {
+    //Eliminazione degli elementi dinamici del ConvexHull
+        void Mesh::DeleteConvexHull()
+        {
+            convexHullElem* elemHead = convexHull->next->next;
+            convexHullElem* elemTail = convexHull->next;
+            while (elemHead != convexHull)
+            {
+                delete elemTail;
+                elemTail = elemHead;
+                elemHead = elemHead->next;
+            }
+            delete elemTail;
+            delete convexHull;
+            elemTail = nullptr;
+            convexHull = nullptr;
+        }
 
-//    }
 
-//    void Mesh::DeleteTriangles()
-//    {
-//        for
-//    }
+        //Modifica di tutti i triangoli in triangoli degeneri e settaggio di puntatori a nullptr se triangoli sono puntati da piùtriangoli padri.
+        void Delaunay::FromGraphToTree(vector<Triangle*>& trPtrVec)
+        {
+            for(int i=0; i<trPtrVec.size(); i++)
+            {
+                if (trPtrVec[i] != nullptr)
+                {
+                    Point nullPoint = Point(0,0);
+                    Triangle trivialTriangle = Triangle(nullPoint,nullPoint,nullPoint);
+                    if (*(trPtrVec[i]) == trivialTriangle){trPtrVec[i] = nullptr;}
+                    else
+                    {
+    //                    trPtrVec[i]->SetVertices(nullPoint, nullPoint, nullPoint);
+                        (trPtrVec[i])->vertices[0] = Point(0,0);
+                        (trPtrVec[i])->vertices[1] = Point(0,0);
+                        (trPtrVec[i])->vertices[2] = Point(0,0);
+                    }
+                    if (trPtrVec[i] != nullptr && !((trPtrVec[i])->pointedTriangles.empty())){FromGraphToTree((trPtrVec[i])->pointedTriangles);}
+                }
+            }
+        }
 
-//    void Delaunay::Delete()
-//    {
 
-//    }
+        //Eliminazione dei triangoli allocati dinamicamente
+        void Delaunay::DeleteTriangles(vector<Triangle*>& trPtrVec)
+        {
+            for (int i=0; i<trPtrVec.size(); i++)
+            {
+                if (trPtrVec[i] != nullptr)
+                {
+                    if (!(trPtrVec[i]->pointedTriangles.empty()))
+                    {
+                        DeleteTriangles(trPtrVec[i]->pointedTriangles);
+                    }
+                    delete trPtrVec[i];
+                    trPtrVec[i] = nullptr;
+                    cout<<trPtrVec[i]<<endl;;
+                }
+            }
+        }
+
 
     //Restituisce 1 se il punto è interno alla mesh o 0 se è esterno
     int Mesh::CheckInside(Point point)
