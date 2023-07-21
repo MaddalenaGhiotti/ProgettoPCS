@@ -14,16 +14,13 @@ using namespace std;
 namespace DelaunayLibrary
 {
 
-
     class Point
     {
-    private:
+    public:
         double x, y;
     public:
         Point() = default;
         Point(double x, double y): x(x), y(y) {}
-        double GetX(){return x;}
-        double GetY(){return y;}
         static array<Point,2> OrederSide(Point& point1, Point& point2);
         friend bool operator==(const Point& point1, const Point& point2){return (point1.x==point2.x && point1.y==point2.y);}
         friend bool operator!=(const Point& point1, const Point& point2){return (point1.x!=point2.x || point1.y!=point2.y);}
@@ -32,21 +29,16 @@ namespace DelaunayLibrary
         friend ostream& operator<<(ostream& os, const Point& point){os<<"x="<<to_string(point.x)<<"  y="<<to_string(point.y)<<endl; return os;}
     };
 
-    //bool operator==(const Point* pointPtr1, const Point* pointPtr2){return *pointPtr1==*pointPtr2;}
-    //bool operator<(const Point* pointPtr1, const Point* pointPtr2){return *pointPtr1<pointPtr2;}
 
-    void reorderPointsCounterclockwiseTr(Point& p1, Point& p2, Point& p3);
-    void reorderPointsCounterclockwiseQ(Point& p1, Point& p2, Point& p3, Point& p4);
     double determinante(double& a11, double& a12, double& a13, double& a21, double& a22, double& a23, double& a31, double& a32, double& a33);
 
     class Triangle
     {
     public: //Da capire
         array<Point,3> vertices;
-
-    public:
         vector<Triangle*> pointedTriangles;
         array<Triangle*,3> adiacentTriangles;
+    public:
         Triangle() = default;
         Triangle(Point& a, Point& b, Point& c);
         //void SetVertices(Point& a, Point& b, Point& c){vertices[0]=a; vertices[1]=b; vertices[2]=c;}
@@ -55,13 +47,13 @@ namespace DelaunayLibrary
         int ContainsPoint(Point& point);
         Triangle* FromRootToLeaf(Point& point);
         static void SetAdiacentTriangle(Triangle& triangle1,Triangle* triangle2, Point& tail, Point& head);
-        static void SetAdiacentTriangleMod(Triangle* triangle1,Triangle* triangle2, Point* Punto1, Point* Punto2);
+//        static void SetAdiacentTriangleMod(Triangle* triangle1,Triangle* triangle2, Point* Punto1, Point* Punto2);
         static array<Point*,4> FindCommonEdge(Triangle& triangle1, Triangle& triangle2);
         // i primi due punti sono i punti del lato in comune, gli altri due sono i punti "esterni"
         static array<Triangle*, 2> Flip(Triangle& Triangle1, Triangle& Triangle2);
         // per flippare due triangoli
         static void adjourn(Triangle* triangle_new_1, Triangle* triangolo1, Triangle* triangolo2);
-        static array<Point*, 2> findOrderedEdge(Triangle* triangle1, Point* Punto1, Point* Punto2);
+//        static array<Point*, 2> findOrderedEdge(Triangle* triangle1, Point* Punto1, Point* Punto2);
         friend bool operator==(const Triangle& triangle1, const Triangle& triangle2){return (triangle1.vertices[0]==triangle2.vertices[0] && triangle1.vertices[1]==triangle2.vertices[1] && triangle1.vertices[2]==triangle2.vertices[2]);}
         friend ostream& operator<<(ostream& os, const Triangle& triangle)
         {os<<"TRIANGLE\n  a: "<<triangle.vertices[0]<< "  b: "<<triangle.vertices[1]<< "  c: "<<triangle.vertices[2];
@@ -88,9 +80,10 @@ namespace DelaunayLibrary
         void Show();
         void MeshToEdges(vector<Triangle*> guideTriangles);
         void OutputEdges();
+        vector<Point*> getPointsVector(){return pointsVector;}
         void FromGraphToTree(vector<Triangle*>& trPtrVec);
         void DeleteTriangles(vector<Triangle*>& trPtrVec);
-        vector<Point*> getPointsVector(){return pointsVector;}
+        void DeletePoints();
     };
 
     class Rectangle
@@ -149,18 +142,14 @@ namespace DelaunayLibrary
 
     class Mesh
     {
-    public:  //Da capire
-        //ConvexHull da capire, aggiungere triangoli guida (?)
-        vector<Triangle> meshTriangles;
+    public:
         vector<Triangle*> guideTriangles;
         convexHullElem *convexHull;
-        list<Triangle> lastMesh;
     public:
         Mesh() = default;
         Mesh(Triangle& triangle);  //Aggiungere Convex Hull al costruttore (capire come)
         void DelunayPropagation(Triangle* startTriangle);
         void Delunay(vector<Triangle*> new_triangles);
-        void OperationEdges(Triangle& Triangle1, Triangle& Triangle2, Triangle& Triangle3, Triangle& Triangle4);
         void AddExternalPoint(Point& point);
         void AddInternalPoint(Point& point, Triangle* rootTriangle);
         void AddSidePoint(Point& point, Triangle* bigTriangle, int side);
