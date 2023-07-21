@@ -1,0 +1,10 @@
+//Stampa punti convex hull
+        cout<<"\nELEMENTI NUOVO CONVEX HULL\n"<<endl;
+        convexHullElem* currentElem2 = mesh.convexHull;
+        for (int i=0; i<20; i++)
+        {
+            cout<<*(currentElem2->hullPoint);
+            cout<<*(currentElem2->externalTriangle);
+            currentElem2 = currentElem2->next;
+        }
+        cout<<"------------------------------------------------------------------"<<endl;

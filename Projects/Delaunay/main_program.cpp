@@ -1,4 +1,4 @@
-
+//Versione più aggiornata
 //MAIN CHE SERVE A NOI PER FARE DELLE PROVE, ES. STAMPARE A SCHERMO
 #include "empty_class.hpp"
 #include <iostream>
@@ -15,6 +15,7 @@ int main()
     Delaunay delaunay = Delaunay(inputFile);
     delaunay.Show();
     delaunay.ExecuteDelaunay();
+    for (Point* pointPtr:delaunay.pointsVector){delete pointPtr;}
 
 
 //_______________________________________________________________________________________________________________________
