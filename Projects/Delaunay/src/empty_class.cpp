@@ -5,9 +5,10 @@
 #include <algorithm>
 #include <random>
 
-double TOL = 0.00000000001;
 namespace DelaunayLibrary
 {
+
+    double TOL = 0.000000001;
 
 ////////////////////// COSTRUTTORI ///////////////////////
 
@@ -26,10 +27,11 @@ namespace DelaunayLibrary
     Delaunay::Delaunay(const string& inputFileName)
     {
         fileName = inputFileName;
+        vector<Point> randomVector;
         ifstream file;
         file.open(fileName);
         if (file.fail()){
-            cerr << "Error while opening file" << endl;
+            cerr << "Errore nell'apertura del file" << endl;
         }
         string line;
         getline(file, line);
@@ -39,9 +41,17 @@ namespace DelaunayLibrary
             double y;
             istringstream ss(line);
             ss >> useless >> x >> y;
+//            Point point = Point(x*100.0, y*100.0);
             Point* point = new Point(x*100.0, y*100.0);
             pointsVector.push_back(point);
+//            randomVector.push_back(point);
         }
+//        sort(randomVector.begin(), randomVector.end());
+//        for (Point pt:randomVector)
+//        {
+//            Point* point = new Point(pt.x, pt.y);
+//            pointsVector.push_back(point);
+//        }
         file.close();
     }
 
@@ -112,11 +122,15 @@ namespace DelaunayLibrary
     {
         //Costruzione griglia
         Grid grid = Grid(pointsVector);
+        //grid.Show();
         grid.PointsInRectangle(pointsVector);
         //Identificazione 4 punti iniziali
         array<Point, 4> firstPoints = grid.Snake();
+        cout<<"Primi 4 punti"<<endl;
+        for (Point point:firstPoints){cout<<point;}
         //Costruzione della mesh
         Triangle* firstTriangle = new Triangle(firstPoints[0],firstPoints[1],firstPoints[2]);
+        //Triangle* firstTriangle = new Triangle(*pointsVector[0],*pointsVector[1],*pointsVector[2]);
         Mesh mesh = Mesh(*firstTriangle);
         //Mescolamento dell'ordine dei punti, ad eccezione dei primi 4
         //random_shuffle(pointsVector.begin(), pointsVector.end());
@@ -127,6 +141,7 @@ namespace DelaunayLibrary
         for (Point* point : pointsVector)
         {
             //Considero tutti i punti che non siano i primi 4 identificati
+            //if (*point!=*pointsVector[0] && *point!=*pointsVector[1] && *point!=*pointsVector[2])
             if (*point!=firstPoints[0] && *point!=firstPoints[1] && *point!=firstPoints[2] && (*point!=firstPoints[3] || flag == false))
             {
                 flag = true;
@@ -158,13 +173,13 @@ namespace DelaunayLibrary
             }
         }
         cout<<endl;
-        //Identificazione dei lati della triangolazione e stampa a schermo
+//        //Identificazione dei lati della triangolazione e stampa a schermo
         MeshToEdges(mesh.guideTriangles);
         cout<<endl;
         cout<<"LATI DELLA TRIANGOLAZIONE\n"<<endl;
         for (array<Point,2> side:finalEdges){cout<<"Lato\n"<<side[0]<<side[1]<<endl;}
         cout<<"Numero totale di lati: "<<finalEdges.size()<<endl;
-        //Caricamento dei risultati su file
+//        //Caricamento dei risultati su file
         OutputEdges();
 
         //Eliminazione oggetti in memoria
@@ -328,12 +343,12 @@ namespace DelaunayLibrary
         }
         if (rectanglesCollapsed == true)
         {
-            cerr << "Il metodo della serpentina ha reggiunto due volte lo stesso rettangolo! Saranno dunque selezionati 4 punti casualmente!";
+            cerr << "Il metodo della serpentina ha reggiunto due volte lo stesso rettangolo! Saranno dunque selezionati 4 punti casualmente!"<<endl;;
             return PickFourRandomPoints(pointsGrid);
         }
         else if (alignedPoints == true)
         {
-            cerr << "Il metodo della serpentina ha selezionato 3 punti allineati! Saranno dunque selezionati 4 punti casualmente!";
+            cerr << "Il metodo della serpentina ha selezionato 3 punti allineati! Saranno dunque selezionati 4 punti casualmente!"<<endl;
             return PickFourRandomPoints(pointsGrid);
         }
         return firstPoints;
@@ -1026,25 +1041,38 @@ namespace DelaunayLibrary
         if (fileG.fail()){
             cerr << "Errore nell'apertura del file per Geogebra" << endl;
         }
-        string outputFileName = "outputEdges";
-        ofstream outputFile;
-        outputFile.open(outputFileName);
-        if (outputFile.fail()){
-            cerr << "Errore nell'apertura del file di output" << endl;
-        }
+//        string outputFileName = "outputEdges";
+//        ofstream outputFile;
+//        outputFile.open(outputFileName);
+//        if (outputFile.fail()){
+//            cerr << "Errore nell'apertura del file di output" << endl;
+//        }
+        //Stampa dei punti sul file Geogebra
         fileG<<"PUNTI"<<endl;
         string fileStringPoints = "{";
-        for (Point* point:pointsVector){fileStringPoints+=("("+to_string((point->x)/100)+","+to_string((point->y)/100)+"),");}
+        for (Point* point:pointsVector){fileStringPoints+=("("+to_string((point->x)/100.0)+","+to_string((point->y)/100.0)+"),");}
         fileStringPoints = fileStringPoints.substr(0,fileStringPoints.length()-1)+"}";
         fileG<<fileStringPoints<<endl;
         fileG<<endl;
+        //STAMPA LATI SU FILE GEOGEBRA E FILE OUTPUT
+        //Intestazione lati File Geogebra
         fileG<<"LATI"<<endl;
+        //Intestazione lati File Output
+//        outputFile<<"LATI TRIANGOLAZIONE DI DELAUNAY"<<endl;
+//        outputFile<<endl;
+        //Stampa lati
         string fileString = "{";
-        for (array<Point,2> side:finalEdges){fileString+=("Segmento(("+to_string((side[0].x)/100)+","+to_string((side[0].y)/100)+"),("+to_string((side[1].x)/100)+","+to_string((side[1].y)/100)+")),");}
+        int i=0;
+        for (array<Point,2> side:finalEdges)
+        {
+            fileString+=("Segmento(("+to_string((side[0].x)/100.0)+","+to_string((side[0].y)/100.0)+"),("+to_string((side[1].x)/100.0)+","+to_string((side[1].y)/100.0)+")),");
+//            outputFile<<to_string(i)+". ("+to_string((side[0].x)/100.0)+","+to_string((side[0].y)/100.0)+")  ("+to_string((side[1].x)/100.0)+","+to_string((side[1].y)/100.0)+")"<<endl;
+            i++;
+        }
         fileString = fileString.substr(0,fileString.length()-1)+"}";
         fileG<<fileString<<endl;
         fileG.close();
-        outputFile.close();
+//        outputFile.close();
     }
 
 

@@ -80,7 +80,7 @@ namespace DelaunayLibrary
     public:
         Rectangle() = default;
         Rectangle(double& startX, double& startY): startX(startX), startY(startY) {}
-        string toString() const {return "startX="+to_string(startX)+"  startY="+to_string(startY);}
+        string toString() const {return "startX="+to_string(startX/100.0)+"  startY="+to_string(startY/100.0);}
         friend bool operator==(const Rectangle& rectangle1, const Rectangle& rectangle2){return (rectangle1.startX==rectangle2.startX && rectangle1.startY==rectangle2.startY);}
     };
 
